@@ -1,8 +1,20 @@
+'use client'
+
 import HabitTracker from '../components/habit-tracker'
 import { Button } from "../components/ui/button"
 import { Plus } from 'lucide-react'
+import { useState } from "react"
 
 export default function Page() {
+  const [habits, setHabits] = useState([
+    { id: 1, title: "Ir al gym" },
+    { id: 2, title: "Leer 30 minutos" }
+  ])
+
+  const removeHabit = (habitId: number) => {
+    setHabits(habits.filter(habit => habit.id !== habitId)) // Eliminar el hábito con el id correspondiente
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-4">
       <div className="max-w-4xl mx-auto space-y-10">
@@ -13,8 +25,9 @@ export default function Page() {
         </div>
 
         {/* Habit Trackers */}
-        <HabitTracker title="Ir al gym" />
-        <HabitTracker title="Leer 30 minutos" />
+        {habits.map(habit => (
+          <HabitTracker key={habit.id} title={habit.title} onRemove={() => removeHabit(habit.id)} />
+        ))}
 
         {/* Create New Habit Button */}
         <Button 

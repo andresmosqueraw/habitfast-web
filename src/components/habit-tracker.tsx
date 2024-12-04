@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from "react"
-import { Check } from 'lucide-react'
+import { Check, Trash2 } from 'lucide-react' // Importar el ícono de eliminar (Trash2)
 import confetti from 'canvas-confetti'
 
 const DAYS_OF_WEEK = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
@@ -37,9 +37,10 @@ function generateDates() {
 
 interface HabitTrackerProps {
   title: string
+  onRemove: () => void // Nueva prop para eliminar el hábito
 }
 
-export default function HabitTracker({ title }: HabitTrackerProps) {
+export default function HabitTracker({ title, onRemove }: HabitTrackerProps) {
   const [markedDays, setMarkedDays] = useState<string[]>([])
   const dates = generateDates()
   const today = formatDate(new Date())
@@ -68,6 +69,11 @@ export default function HabitTracker({ title }: HabitTrackerProps) {
     })
   }
 
+  const removeHabit = () => {
+    setMarkedDays([]) // Vaciar los días marcados
+    onRemove() // Llamar a la función de eliminación de componente
+  }
+
   useState(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth
@@ -79,15 +85,26 @@ export default function HabitTracker({ title }: HabitTrackerProps) {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-white">{title}</h2>
-        <button 
-          ref={buttonRef}
-          className={`p-3 rounded-full transition-transform transform hover:scale-105 ${
-            markedDays.includes(today) ? 'bg-emerald-500' : 'bg-gray-700'
-          } hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-50`}
-          onClick={() => markDay(today, buttonRef.current!)} // Pasa el ref correcto
-        >
-          <Check className={`w-5 h-5 ${markedDays.includes(today) ? 'text-white' : 'text-emerald-400'}`} />
-        </button>
+        <div className="flex gap-4 group relative">
+          {/* Botón de eliminar, solo aparece al hacer hover */}
+          <button 
+            className="p-3 rounded-full transition-transform transform hover:scale-105 bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50 opacity-0 group-hover:opacity-100 absolute left-[-54px] transition-all"
+            onClick={removeHabit}
+          >
+            <Trash2 className="w-5 h-5 text-white" />
+          </button>
+
+          {/* Botón de marcar día */}
+          <button 
+            ref={buttonRef}
+            className={`p-3 rounded-full transition-transform transform hover:scale-105 ${
+              markedDays.includes(today) ? 'bg-emerald-500' : 'bg-gray-700'
+            } hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-50`}
+            onClick={() => markDay(today, buttonRef.current!)} // Pasa el ref correcto
+          >
+            <Check className={`w-5 h-5 ${markedDays.includes(today) ? 'text-white' : 'text-emerald-400'}`} />
+          </button>
+        </div>
       </div>
 
       {/* Grid */}
