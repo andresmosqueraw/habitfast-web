@@ -42,6 +42,7 @@ interface HabitTrackerProps {
 
 export default function HabitTracker({ title, onRemove }: HabitTrackerProps) {
   const [markedDays, setMarkedDays] = useState<string[]>([])
+  const [isHovered, setIsHovered] = useState(false) // Estado para controlar el hover
   const dates = generateDates()
   const today = formatDate(new Date())
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -69,30 +70,33 @@ export default function HabitTracker({ title, onRemove }: HabitTrackerProps) {
     })
   }
 
-  const removeHabit = () => {
-    setMarkedDays([]) // Vaciar los días marcados
-    onRemove() // Llamar a la función de eliminación de componente
+  const handleMouseEnter = () => {
+    setIsHovered(true) // Mostrar el botón de eliminar
   }
 
-  useState(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth
-    }
-  })
+  const handleMouseLeave = () => {
+    setIsHovered(false) // Ocultar el botón de eliminar
+  }
 
   return (
-    <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-xl p-6 shadow-lg space-y-4">
+    <div 
+      className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-xl p-6 shadow-lg space-y-4"
+      onMouseEnter={handleMouseEnter} // Evento al entrar el mouse
+      onMouseLeave={handleMouseLeave} // Evento al salir el mouse
+    >
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-white">{title}</h2>
         <div className="flex gap-4 group relative">
-          {/* Botón de eliminar, solo aparece al hacer hover */}
-          <button 
-            className="p-3 rounded-full transition-transform transform hover:scale-105 bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50 opacity-0 group-hover:opacity-100 absolute left-[-54px] transition-all"
-            onClick={removeHabit}
-          >
-            <Trash2 className="w-5 h-5 text-white" />
-          </button>
+          {/* Botón de eliminar */}
+          {isHovered && (
+            <button 
+              className="p-3 rounded-full transition-transform transform hover:scale-105 bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50 absolute left-[-54px] transition-all"
+              onClick={onRemove}
+            >
+              <Trash2 className="w-5 h-5 text-white" />
+            </button>
+          )}
 
           {/* Botón de marcar día */}
           <button 
