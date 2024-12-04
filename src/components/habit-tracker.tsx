@@ -1,0 +1,128 @@
+'use client'
+
+import { useState, useRef } from "react"
+import { Check } from 'lucide-react'
+import confetti from 'canvas-confetti'
+
+const DAYS_OF_WEEK = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
+const MONTHS = ['EN', 'FB', 'MR', 'AB', 'MY', 'JN', 'JL', 'AG', 'SP', 'OC', 'NV', 'DC']
+const ROWS = 7
+
+function formatDate(date: Date): string {
+  const month = MONTHS[date.getMonth()]
+  const dayOfWeek = DAYS_OF_WEEK[date.getDay()]
+  const dayNumber = date.getDate().toString().padStart(2, '0')
+  const year = date.getFullYear().toString().slice(-2)
+  return `${month}${dayOfWeek}${dayNumber}-${year}`
+}
+
+function generateDates() {
+  const startDate = new Date(2024, 0, 1) // January 1, 2024
+  const endDate = new Date() // Today
+  const dates: string[][] = Array(ROWS).fill([]).map(() => [])
+  
+  let currentDate = new Date(startDate)
+  let columnIndex = 0
+  
+  while (currentDate <= endDate) {
+    const rowIndex = columnIndex % ROWS
+    dates[rowIndex].push(formatDate(currentDate))
+    
+    currentDate.setDate(currentDate.getDate() + 1)
+    columnIndex++
+  }
+  
+  return dates
+}
+
+interface HabitTrackerProps {
+  title: string
+}
+
+export default function HabitTracker({ title }: HabitTrackerProps) {
+  const [markedDays, setMarkedDays] = useState<string[]>([])
+  const dates = generateDates()
+  const today = formatDate(new Date())
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  const markDay = (date: string, dayElement: HTMLElement) => {
+    if (!markedDays.includes(date)) {
+      setMarkedDays(prev => [...prev, date])
+      triggerConfetti(dayElement)
+    } else {
+      setMarkedDays(prev => prev.filter(day => day !== date))
+    }
+  }
+
+  const triggerConfetti = (dayElement: HTMLElement) => {
+    const rect = dayElement.getBoundingClientRect()
+    confetti({
+      particleCount: 100,
+      startVelocity: 30,
+      spread: 360,
+      origin: {
+        x: (rect.left + rect.width / 2) / window.innerWidth,
+        y: (rect.top + rect.height / 2) / window.innerHeight,
+      },
+    })
+  }
+
+  useState(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth
+    }
+  })
+
+  return (
+    <div className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-xl p-6 shadow-lg space-y-4">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-white">{title}</h2>
+        <button 
+          ref={buttonRef}
+          className={`p-3 rounded-full transition-transform transform hover:scale-105 ${
+            markedDays.includes(today) ? 'bg-emerald-500' : 'bg-gray-700'
+          } hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-50`}
+          onClick={() => markDay(today, buttonRef.current!)} // Pasa el ref correcto
+        >
+          <Check className={`w-5 h-5 ${markedDays.includes(today) ? 'text-white' : 'text-emerald-400'}`} />
+        </button>
+      </div>
+
+      {/* Grid */}
+      <div className="overflow-x-auto" ref={scrollContainerRef}>
+        <div className="grid grid-rows-7 grid-flow-col gap-1 min-w-max">
+          {dates.map((row, rowIndex) => (
+            <div key={rowIndex} className="flex gap-1">
+              {row.map((date) => {
+                const [month, , day, year] = date.match(/([A-Z]{2})([A-Z])(\d{2})-(\d{2})/)?.slice(1) || []
+                const dateObj = new Date(parseInt(`20${year}`), MONTHS.indexOf(month), parseInt(day))
+                if (dateObj > new Date()) return null // Don't render future dates
+
+                return (
+                  <div
+                    key={date}
+                    onClick={(e) => markDay(date, e.currentTarget)} // Pasa el elemento del día
+                    className={`
+                      w-8 h-8 rounded-md text-[8px] font-medium
+                      flex flex-col items-center justify-center
+                      transition-colors duration-200 cursor-pointer
+                      ${markedDays.includes(date)
+                        ? 'bg-emerald-500 text-white shadow-md' 
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }
+                    `}
+                  >
+                    <span className="text-[9px] font-bold">{month}</span>
+                    <span className="text-[10px]">{day}</span>
+                  </div>
+                )
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
