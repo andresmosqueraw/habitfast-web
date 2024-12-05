@@ -51,6 +51,9 @@ export default function HabitTracker({ title, onRemove, onRename }: HabitTracker
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
+  // Refs para el sonido
+  const confettiSound = useRef<HTMLAudioElement | null>(null)
+
   const markDay = (date: string, dayElement: HTMLElement) => {
     if (!markedDays.includes(date)) {
       setMarkedDays(prev => [...prev, date])
@@ -62,6 +65,13 @@ export default function HabitTracker({ title, onRemove, onRename }: HabitTracker
 
   const triggerConfetti = (dayElement: HTMLElement) => {
     const rect = dayElement.getBoundingClientRect()
+
+    // Reproducir sonido
+    if (confettiSound.current) {
+      confettiSound.current.currentTime = 0 // Reiniciar el sonido
+      confettiSound.current.play()
+    }
+
     confetti({
       particleCount: 100,
       startVelocity: 30,
@@ -94,6 +104,9 @@ export default function HabitTracker({ title, onRemove, onRename }: HabitTracker
       onMouseEnter={handleMouseEnter} // Evento al entrar el mouse
       onMouseLeave={handleMouseLeave} // Evento al salir el mouse
     >
+      {/* Audio para sonido */}
+      <audio ref={confettiSound} src="/sounds/cheer-short.mp3" />
+
       {/* Header */}
       <div className="flex justify-between items-center">
         {isEditing ? (
