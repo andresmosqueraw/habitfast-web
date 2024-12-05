@@ -37,12 +37,15 @@ function generateDates() {
 
 interface HabitTrackerProps {
   title: string
-  onRemove: () => void // Nueva prop para eliminar el hábito
+  onRemove: () => void
+  onRename: (newTitle: string) => void // Nueva prop para renombrar el hábito
 }
 
-export default function HabitTracker({ title, onRemove }: HabitTrackerProps) {
+export default function HabitTracker({ title, onRemove, onRename }: HabitTrackerProps) {
   const [markedDays, setMarkedDays] = useState<string[]>([])
   const [isHovered, setIsHovered] = useState(false) // Estado para controlar el hover
+  const [isEditing, setIsEditing] = useState(false) // Estado para editar el nombre
+  const [currentTitle, setCurrentTitle] = useState(title) // Título editable
   const dates = generateDates()
   const today = formatDate(new Date())
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -70,12 +73,19 @@ export default function HabitTracker({ title, onRemove }: HabitTrackerProps) {
     })
   }
 
-  const handleMouseEnter = () => {
-    setIsHovered(true) // Mostrar el botón de eliminar
+  const handleMouseEnter = () => setIsHovered(true)
+  const handleMouseLeave = () => setIsHovered(false)
+
+  const handleRename = () => setIsEditing(true)
+  const handleBlur = () => {
+    setIsEditing(false)
+    onRename(currentTitle.trim()) // Llama a la prop para renombrar
   }
 
-  const handleMouseLeave = () => {
-    setIsHovered(false) // Ocultar el botón de eliminar
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleBlur()
+    }
   }
 
   return (
@@ -86,7 +96,24 @@ export default function HabitTracker({ title, onRemove }: HabitTrackerProps) {
     >
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-white">{title}</h2>
+        {isEditing ? (
+          <input
+            type="text"
+            value={currentTitle}
+            onChange={(e) => setCurrentTitle(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            autoFocus
+            className="text-xl font-semibold text-white bg-transparent focus:outline-none w-full"
+          />
+        ) : (
+          <h2
+            className="text-xl font-semibold text-white cursor-pointer"
+            onClick={handleRename}
+          >
+            {currentTitle}
+          </h2>
+        )}
         <div className="flex gap-4 group relative">
           {/* Botón de eliminar */}
           {isHovered && (

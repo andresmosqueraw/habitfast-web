@@ -19,6 +19,14 @@ export default function Page() {
     setHabits(habits.filter(habit => habit.id !== habitId)) // Eliminar el hábito con el id correspondiente
   }
 
+  const renameHabit = (habitId: number, newTitle: string) => {
+    setHabits((prevHabits) =>
+      prevHabits.map((habit) =>
+        habit.id === habitId ? { ...habit, title: newTitle } : habit
+      )
+    )
+  }
+
   const addHabit = () => {
     if (newHabitTitle.trim()) {
       const newHabit = { id: Date.now(), title: newHabitTitle }
@@ -59,7 +67,12 @@ export default function Page() {
 
         {/* Habit Trackers */}
         {habits.map(habit => (
-          <HabitTracker key={habit.id} title={habit.title} onRemove={() => openDeleteModal(habit.id)} />
+          <HabitTracker
+            key={habit.id}
+            title={habit.title}
+            onRemove={() => openDeleteModal(habit.id)}
+            onRename={(newTitle) => renameHabit(habit.id, newTitle)} // Arreglar `onRename`
+          />
         ))}
 
         {/* Create New Habit Button */}
