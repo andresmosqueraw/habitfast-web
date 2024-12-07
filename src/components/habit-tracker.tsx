@@ -66,9 +66,10 @@ export default function HabitTracker({ title, onRemove, onRename }: HabitTracker
   const triggerConfetti = (dayElement: HTMLElement) => {
     const rect = dayElement.getBoundingClientRect()
 
-    // Reproducir sonido
+    // Reproducir sonido con volumen más bajo
     if (confettiSound.current) {
-      confettiSound.current.currentTime = 0 // Reiniciar el sonido
+      confettiSound.current.volume = 0.10  // Ajustar volumen al 20%
+      confettiSound.current.currentTime = 0
       confettiSound.current.play()
     }
 
