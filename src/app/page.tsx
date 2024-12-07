@@ -3,7 +3,9 @@
 import HabitTracker from '../components/habit-tracker'
 import { Button } from "../components/ui/button"
 import { Plus } from 'lucide-react'
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { supabase } from '../lib/supabase'
+import { User } from '@supabase/supabase-js'
 
 export default function Page() {
   const [habits, setHabits] = useState([
@@ -13,6 +15,23 @@ export default function Page() {
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false) // Estado para el modal de confirmación de eliminación
   const [habitToDelete, setHabitToDelete] = useState<number | null>(null) // ID del hábito a eliminar
   const [newHabitTitle, setNewHabitTitle] = useState("") // Estado para el nuevo hábito
+  const [user, setUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    // Verificar el estado de autenticación inicial
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+
+    // Suscribirse a cambios en la autenticación
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const removeHabit = (habitId: number) => {
     setHabits(habits.filter(habit => habit.id !== habitId)) // Eliminar el hábito con el id correspondiente
@@ -55,18 +74,29 @@ export default function Page() {
     closeDeleteModal()
   }
 
+  const handleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
+    })
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-4">
       <div className="max-w-4xl mx-auto space-y-10">
-        {/* Login/Register Section */}
-        <div className="text-center py-4">
-          <button
-            className="text-white text-sm font-medium bg-gray-800 bg-opacity-50 px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-            onClick={() => alert('Redirigir a la página de registro o inicio de sesión')}
-          >
-            Regístrate o Inicia sesión para guardar tu progreso
-          </button>
-        </div>
+        {/* Login/Register Section - Solo mostrar si no hay usuario */}
+        {!user && (
+          <div className="text-center py-4">
+            <button
+              className="text-white text-sm font-medium bg-gray-800 bg-opacity-50 px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              onClick={handleLogin}
+            >
+              Regístrate o Inicia sesión para guardar tu progreso
+            </button>
+          </div>
+        )}
 
         {/* Title and Description */}
         <div className="text-center space-y-2">
