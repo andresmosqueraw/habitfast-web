@@ -74,7 +74,7 @@ export default function HabitTracker({ title, onRemove, onRename }: HabitTracker
     }
 
     confetti({
-      particleCount: 100,
+      particleCount: 300,
       startVelocity: 30,
       spread: 360,
       origin: {
@@ -101,7 +101,7 @@ export default function HabitTracker({ title, onRemove, onRename }: HabitTracker
 
   return (
     <div 
-      className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-xl p-6 shadow-lg space-y-4"
+      className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-xl p-4 shadow-lg"
       onMouseEnter={handleMouseEnter} // Evento al entrar el mouse
       onMouseLeave={handleMouseLeave} // Evento al salir el mouse
     >
@@ -109,7 +109,7 @@ export default function HabitTracker({ title, onRemove, onRename }: HabitTracker
       <audio ref={confettiSound} src="/sounds/cheer-short.mp3" />
 
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center pb-3">
         {isEditing ? (
           <input
             type="text"

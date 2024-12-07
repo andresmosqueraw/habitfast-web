@@ -100,7 +100,7 @@ export default function Page() {
 
         {/* Title and Description */}
         <div className="text-center space-y-2">
-          <h1 className="text-5xl font-bold text-white tracking-tight">HabitFast</h1>
+          <h1 className="text-5xl pt-3 font-bold text-white tracking-tight">HabitFast</h1>
           <p className="text-xl text-gray-300">Change Your Life One Habit at a Time</p>
         </div>
 
