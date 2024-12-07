@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Check, Trash2 } from 'lucide-react' // Importar el ícono de eliminar (Trash2)
 import confetti from 'canvas-confetti'
+import { supabase } from '../lib/supabase'
+import { User } from '@supabase/supabase-js'
 
 const DAYS_OF_WEEK = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
 const MONTHS = ['EN', 'FB', 'MR', 'AB', 'MY', 'JN', 'JL', 'AG', 'SP', 'OC', 'NV', 'DC']
@@ -36,13 +38,16 @@ function generateDates() {
 }
 
 interface HabitTrackerProps {
-  title: string
-  onRemove: () => void
-  onRename: (newTitle: string) => void // Nueva prop para renombrar el hábito
+  id: number;
+  title: string;
+  onRemove: () => void;
+  onRename: (newTitle: string) => void;
+  initialMarkedDays?: string[];
 }
 
-export default function HabitTracker({ title, onRemove, onRename }: HabitTrackerProps) {
-  const [markedDays, setMarkedDays] = useState<string[]>([])
+export default function HabitTracker({ id, title, onRemove, onRename, initialMarkedDays = [] }: HabitTrackerProps) {
+  const [markedDays, setMarkedDays] = useState<string[]>(initialMarkedDays)
+  const [user, setUser] = useState<User | null>(null)
   const [isHovered, setIsHovered] = useState(false) // Estado para controlar el hover
   const [isEditing, setIsEditing] = useState(false) // Estado para editar el nombre
   const [currentTitle, setCurrentTitle] = useState(title) // Título editable
@@ -54,13 +59,42 @@ export default function HabitTracker({ title, onRemove, onRename }: HabitTracker
   // Refs para el sonido
   const confettiSound = useRef<HTMLAudioElement | null>(null)
 
-  const markDay = (date: string, dayElement: HTMLElement) => {
+  // Obtener el usuario actual
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const markDay = async (date: string, dayElement: HTMLElement) => {
+    if (!user) return
+
+    let newMarkedDays: string[]
     if (!markedDays.includes(date)) {
-      setMarkedDays(prev => [...prev, date])
+      newMarkedDays = [...markedDays, date]
       triggerConfetti(dayElement)
     } else {
-      setMarkedDays(prev => prev.filter(day => day !== date))
+      newMarkedDays = markedDays.filter(day => day !== date)
     }
+
+    const { error } = await supabase
+      .from('habits')
+      .update({ marked_days: newMarkedDays })
+      .eq('id', id)
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('Error updating marked days:', error)
+      return
+    }
+
+    setMarkedDays(newMarkedDays)
   }
 
   const triggerConfetti = (dayElement: HTMLElement) => {

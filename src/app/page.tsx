@@ -7,37 +7,89 @@ import { useState, useEffect } from "react"
 import { supabase } from '../lib/supabase'
 import { User } from '@supabase/supabase-js'
 
+interface Habit {
+  id: number;
+  title: string;
+  marked_days?: string[];
+}
+
 export default function Page() {
-  const [habits, setHabits] = useState([
-    { id: 1, title: "Ir al gym" }
-  ])
-  const [isModalOpen, setIsModalOpen] = useState(false) // Estado para controlar el pop-up
-  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false) // Estado para el modal de confirmación de eliminación
-  const [habitToDelete, setHabitToDelete] = useState<number | null>(null) // ID del hábito a eliminar
-  const [newHabitTitle, setNewHabitTitle] = useState("") // Estado para el nuevo hábito
+  const [habits, setHabits] = useState<Habit[]>([])
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false)
+  const [habitToDelete, setHabitToDelete] = useState<number | null>(null)
+  const [newHabitTitle, setNewHabitTitle] = useState("")
   const [user, setUser] = useState<User | null>(null)
 
+  // Cargar hábitos al iniciar sesión
   useEffect(() => {
-    // Verificar el estado de autenticación inicial
+    const loadHabits = async (userId: string) => {
+      const { data, error } = await supabase
+        .from('habits')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true })
+
+      if (error) {
+        console.error('Error loading habits:', error)
+        return
+      }
+
+      setHabits(data || [])
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+      const currentUser = session?.user
+      setUser(currentUser ?? null)
+      if (currentUser) {
+        loadHabits(currentUser.id)
+      }
     })
 
-    // Suscribirse a cambios en la autenticación
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user
+      setUser(currentUser ?? null)
+      if (currentUser) {
+        loadHabits(currentUser.id)
+      } else {
+        setHabits([])
+      }
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  const removeHabit = (habitId: number) => {
-    setHabits(habits.filter(habit => habit.id !== habitId)) // Eliminar el hábito con el id correspondiente
+  const removeHabit = async (habitId: number) => {
+    if (!user) return
+
+    const { error } = await supabase
+      .from('habits')
+      .delete()
+      .eq('id', habitId)
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('Error removing habit:', error)
+      return
+    }
+
+    setHabits(habits.filter(habit => habit.id !== habitId))
   }
 
-  const renameHabit = (habitId: number, newTitle: string) => {
+  const renameHabit = async (habitId: number, newTitle: string) => {
+    if (!user) return
+
+    const { error } = await supabase
+      .from('habits')
+      .update({ title: newTitle })
+      .eq('id', habitId)
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('Error renaming habit:', error)
+      return
+    }
+
     setHabits((prevHabits) =>
       prevHabits.map((habit) =>
         habit.id === habitId ? { ...habit, title: newTitle } : habit
@@ -45,13 +97,28 @@ export default function Page() {
     )
   }
 
-  const addHabit = () => {
-    if (newHabitTitle.trim()) {
-      const newHabit = { id: Date.now(), title: newHabitTitle }
-      setHabits(prevHabits => [...prevHabits, newHabit]) // Agregar el nuevo hábito
-      setNewHabitTitle("") // Limpiar el input
-      setIsModalOpen(false) // Cerrar el pop-up
+  const addHabit = async () => {
+    if (!newHabitTitle.trim() || !user) return
+
+    const newHabit = {
+      id: Date.now(),
+      title: newHabitTitle,
+      user_id: user.id,
+      marked_days: []
     }
+
+    const { error } = await supabase
+      .from('habits')
+      .insert(newHabit)
+
+    if (error) {
+      console.error('Error adding habit:', error)
+      return
+    }
+
+    setHabits(prevHabits => [...prevHabits, newHabit])
+    setNewHabitTitle("")
+    setIsModalOpen(false)
   }
 
   const openModal = () => setIsModalOpen(true)
@@ -108,9 +175,10 @@ export default function Page() {
         {habits.map(habit => (
           <HabitTracker
             key={habit.id}
+            id={habit.id}
             title={habit.title}
             onRemove={() => openDeleteModal(habit.id)}
-            onRename={(newTitle) => renameHabit(habit.id, newTitle)} // Arreglar `onRename`
+            onRename={(newTitle) => renameHabit(habit.id, newTitle)}
           />
         ))}
 
