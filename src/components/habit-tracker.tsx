@@ -62,7 +62,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   const [isEditing, setIsEditing] = useState(false)
   const [currentTitle, setCurrentTitle] = useState(title)
   const dates = generateDates(MONTHS, DAYS_OF_WEEK)
-  const today = formatDateForDisplay(dates[0][0], MONTHS, DAYS_OF_WEEK)
+  const today = formatDateForDB(new Date())
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const confettiSound = useRef<HTMLAudioElement | null>(null)
