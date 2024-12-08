@@ -1,34 +1,40 @@
 'use client'
 
 import { useState, useRef, useEffect } from "react"
-import { Check, Trash2 } from 'lucide-react' // Importar el ícono de eliminar (Trash2)
+import { Check, Trash2 } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { supabase } from '../lib/supabase'
 import { User } from '@supabase/supabase-js'
+import { translations } from '../lib/translations'
 
-const DAYS_OF_WEEK = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
-const MONTHS = ['EN', 'FB', 'MR', 'AB', 'MY', 'JN', 'JL', 'AG', 'SP', 'OC', 'NV', 'DC']
-const ROWS = 7
+interface HabitTrackerProps {
+  id: number;
+  title: string;
+  onRemove: () => void;
+  onRename: (newTitle: string) => void;
+  initialMarkedDays?: string[];
+  language: 'en' | 'es';
+}
 
-function formatDate(date: Date): string {
-  const month = MONTHS[date.getMonth()]
-  const dayOfWeek = DAYS_OF_WEEK[date.getDay()]
+function formatDate(date: Date, months: string[], days: string[]): string {
+  const month = months[date.getMonth()]
+  const dayOfWeek = days[date.getDay()]
   const dayNumber = date.getDate().toString().padStart(2, '0')
   const year = date.getFullYear().toString().slice(-2)
   return `${month}${dayOfWeek}${dayNumber}-${year}`
 }
 
-function generateDates() {
+function generateDates(months: string[], days: string[]): string[][] {
   const startDate = new Date(2024, 0, 1) // January 1, 2024
   const endDate = new Date() // Today
-  const dates: string[][] = Array(ROWS).fill([]).map(() => [])
+  const dates: string[][] = Array(7).fill([]).map(() => [])
   
   let currentDate = new Date(startDate)
   let columnIndex = 0
   
   while (currentDate <= endDate) {
-    const rowIndex = columnIndex % ROWS
-    dates[rowIndex].push(formatDate(currentDate))
+    const rowIndex = columnIndex % 7
+    dates[rowIndex].push(formatDate(currentDate, months, days))
     
     currentDate.setDate(currentDate.getDate() + 1)
     columnIndex++
@@ -37,29 +43,23 @@ function generateDates() {
   return dates
 }
 
-interface HabitTrackerProps {
-  id: number;
-  title: string;
-  onRemove: () => void;
-  onRename: (newTitle: string) => void;
-  initialMarkedDays?: string[];
-}
+export default function HabitTracker({ id, title, onRemove, onRename, initialMarkedDays = [], language }: HabitTrackerProps) {
+  const t = translations[language]
+  const DAYS_OF_WEEK = t.days
+  const MONTHS = t.months
+  const ROWS = 7
 
-export default function HabitTracker({ id, title, onRemove, onRename, initialMarkedDays = [] }: HabitTrackerProps) {
   const [markedDays, setMarkedDays] = useState<string[]>(initialMarkedDays)
   const [user, setUser] = useState<User | null>(null)
-  const [isHovered, setIsHovered] = useState(false) // Estado para controlar el hover
-  const [isEditing, setIsEditing] = useState(false) // Estado para editar el nombre
-  const [currentTitle, setCurrentTitle] = useState(title) // Título editable
-  const dates = generateDates()
-  const today = formatDate(new Date())
+  const [isHovered, setIsHovered] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [currentTitle, setCurrentTitle] = useState(title)
+  const dates = generateDates(MONTHS, DAYS_OF_WEEK)
+  const today = formatDate(new Date(), MONTHS, DAYS_OF_WEEK)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
-
-  // Refs para el sonido
   const confettiSound = useRef<HTMLAudioElement | null>(null)
 
-  // Obtener el usuario actual
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
@@ -100,9 +100,8 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   const triggerConfetti = (dayElement: HTMLElement) => {
     const rect = dayElement.getBoundingClientRect()
 
-    // Reproducir sonido con volumen más bajo
     if (confettiSound.current) {
-      confettiSound.current.volume = 0.10  // Ajustar volumen al 20%
+      confettiSound.current.volume = 0.10
       confettiSound.current.currentTime = 0
       confettiSound.current.play()
     }
@@ -120,11 +119,10 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
 
   const handleMouseEnter = () => setIsHovered(true)
   const handleMouseLeave = () => setIsHovered(false)
-
   const handleRename = () => setIsEditing(true)
   const handleBlur = () => {
     setIsEditing(false)
-    onRename(currentTitle.trim()) // Llama a la prop para renombrar
+    onRename(currentTitle.trim())
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -136,13 +134,11 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   return (
     <div 
       className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-xl p-4 shadow-lg"
-      onMouseEnter={handleMouseEnter} // Evento al entrar el mouse
-      onMouseLeave={handleMouseLeave} // Evento al salir el mouse
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      {/* Audio para sonido */}
       <audio ref={confettiSound} src="/sounds/cheer-short.mp3" />
 
-      {/* Header */}
       <div className="flex justify-between items-center pb-3">
         {isEditing ? (
           <input
@@ -163,7 +159,6 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
           </h2>
         )}
         <div className="flex gap-4 group relative">
-          {/* Botón de eliminar */}
           {isHovered && (
             <button 
               className="p-3 rounded-full transition-transform transform hover:scale-105 bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50 absolute left-[-54px] transition-all"
@@ -173,33 +168,31 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
             </button>
           )}
 
-          {/* Botón de marcar día */}
           <button 
             ref={buttonRef}
             className={`p-3 rounded-full transition-transform transform hover:scale-105 ${
               markedDays.includes(today) ? 'bg-emerald-500' : 'bg-gray-700'
             } hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-50`}
-            onClick={() => markDay(today, buttonRef.current!)} // Pasa el ref correcto
+            onClick={() => markDay(today, buttonRef.current!)}
           >
             <Check className={`w-5 h-5 ${markedDays.includes(today) ? 'text-white' : 'text-emerald-400'}`} />
           </button>
         </div>
       </div>
 
-      {/* Grid */}
       <div className="overflow-x-auto" ref={scrollContainerRef}>
         <div className="grid grid-rows-7 grid-flow-col gap-1 min-w-max">
-          {dates.map((row, rowIndex) => (
+          {dates.map((row: string[], rowIndex: number) => (
             <div key={rowIndex} className="flex gap-1">
-              {row.map((date) => {
+              {row.map((date: string) => {
                 const [month, , day, year] = date.match(/([A-Z]{2})([A-Z])(\d{2})-(\d{2})/)?.slice(1) || []
                 const dateObj = new Date(parseInt(`20${year}`), MONTHS.indexOf(month), parseInt(day))
-                if (dateObj > new Date()) return null // Don't render future dates
+                if (dateObj > new Date()) return null
 
                 return (
                   <div
                     key={date}
-                    onClick={(e) => markDay(date, e.currentTarget)} // Pasa el elemento del día
+                    onClick={(e) => markDay(date, e.currentTarget)}
                     className={`
                       w-8 h-8 rounded-md text-[8px] font-medium
                       flex flex-col items-center justify-center

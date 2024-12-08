@@ -209,6 +209,7 @@ export default function Page() {
             title={habit.title}
             onRemove={() => openDeleteModal(habit.id)}
             onRename={(newTitle) => renameHabit(habit.id, newTitle)}
+            language={language}
           />
         ))}
 

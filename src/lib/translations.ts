@@ -9,7 +9,9 @@ export const translations = {
     create: "Create",
     deleteConfirmTitle: "Are you sure?",
     deleteConfirmText: "You are about to delete this habit. Do you want to continue?",
-    delete: "Delete"
+    delete: "Delete",
+    days: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+    months: ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
   },
   es: {
     loginButton: "Regístrate o Inicia sesión para guardar tu progreso",
@@ -21,7 +23,9 @@ export const translations = {
     create: "Crear",
     deleteConfirmTitle: "¿Estás seguro?",
     deleteConfirmText: "Estás a punto de eliminar este hábito. ¿Quieres continuar?",
-    delete: "Eliminar"
+    delete: "Eliminar",
+    days: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
+    months: ['EN', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
   }
 }
 
