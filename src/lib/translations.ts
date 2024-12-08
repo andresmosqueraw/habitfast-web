@@ -25,7 +25,7 @@ export const translations = {
     deleteConfirmText: "Estás a punto de eliminar este hábito. ¿Quieres continuar?",
     delete: "Eliminar",
     days: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
-    months: ['EN', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+    months: ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
   }
 }
 

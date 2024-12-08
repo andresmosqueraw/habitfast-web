@@ -16,17 +16,24 @@ interface HabitTrackerProps {
   language: 'en' | 'es';
 }
 
-function formatDate(date: Date, months: string[], days: string[]): string {
-  const month = months[date.getMonth()]
-  const dayOfWeek = days[date.getDay()]
+function formatDateForDB(date: Date): string {
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const dayOfWeek = date.getDay()
   const dayNumber = date.getDate().toString().padStart(2, '0')
   const year = date.getFullYear().toString().slice(-2)
   return `${month}${dayOfWeek}${dayNumber}-${year}`
 }
 
+function formatDateForDisplay(dbDate: string, months: string[], days: string[]): string {
+  const [monthNum, dayOfWeek, dayNum, year] = dbDate.match(/(\d{2})(\d)(\d{2})-(\d{2})/)?.slice(1) || []
+  const month = months[parseInt(monthNum) - 1]
+  const day = days[parseInt(dayOfWeek)]
+  return `${month}${day}${dayNum}-${year}`
+}
+
 function generateDates(months: string[], days: string[]): string[][] {
-  const startDate = new Date(2024, 0, 1) // January 1, 2024
-  const endDate = new Date() // Today
+  const startDate = new Date(2024, 0, 1)
+  const endDate = new Date()
   const dates: string[][] = Array(7).fill([]).map(() => [])
   
   let currentDate = new Date(startDate)
@@ -34,8 +41,8 @@ function generateDates(months: string[], days: string[]): string[][] {
   
   while (currentDate <= endDate) {
     const rowIndex = columnIndex % 7
-    dates[rowIndex].push(formatDate(currentDate, months, days))
-    
+    const dbDate = formatDateForDB(currentDate)
+    dates[rowIndex].push(dbDate)
     currentDate.setDate(currentDate.getDate() + 1)
     columnIndex++
   }
@@ -55,7 +62,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   const [isEditing, setIsEditing] = useState(false)
   const [currentTitle, setCurrentTitle] = useState(title)
   const dates = generateDates(MONTHS, DAYS_OF_WEEK)
-  const today = formatDate(new Date(), MONTHS, DAYS_OF_WEEK)
+  const today = formatDateForDisplay(dates[0][0], MONTHS, DAYS_OF_WEEK)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const confettiSound = useRef<HTMLAudioElement | null>(null)
@@ -184,27 +191,28 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
         <div className="grid grid-rows-7 grid-flow-col gap-1 min-w-max">
           {dates.map((row: string[], rowIndex: number) => (
             <div key={rowIndex} className="flex gap-1">
-              {row.map((date: string) => {
-                const [month, , day, year] = date.match(/([A-Z]{2})([A-Z])(\d{2})-(\d{2})/)?.slice(1) || []
-                const dateObj = new Date(parseInt(`20${year}`), MONTHS.indexOf(month), parseInt(day))
+              {row.map((dbDate: string) => {
+                const displayDate = formatDateForDisplay(dbDate, MONTHS, DAYS_OF_WEEK)
+                const [monthNum, dayOfWeek, dayNum, year] = dbDate.match(/(\d{2})(\d)(\d{2})-(\d{2})/)?.slice(1) || []
+                const dateObj = new Date(parseInt(`20${year}`), parseInt(monthNum) - 1, parseInt(dayNum))
                 if (dateObj > new Date()) return null
 
                 return (
                   <div
-                    key={date}
-                    onClick={(e) => markDay(date, e.currentTarget)}
+                    key={dbDate}
+                    onClick={(e) => markDay(dbDate, e.currentTarget)}
                     className={`
                       w-8 h-8 rounded-md text-[8px] font-medium
                       flex flex-col items-center justify-center
                       transition-colors duration-200 cursor-pointer
-                      ${markedDays.includes(date)
+                      ${markedDays.includes(dbDate)
                         ? 'bg-emerald-500 text-white shadow-md' 
                         : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }
                     `}
                   >
-                    <span className="text-[9px] font-bold">{month}</span>
-                    <span className="text-[10px]">{day}</span>
+                    <span className="text-[9px] font-bold">{MONTHS[parseInt(monthNum) - 1]}</span>
+                    <span className="text-[10px]">{dayNum}</span>
                   </div>
                 )
               })}

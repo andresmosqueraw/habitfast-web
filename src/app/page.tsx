@@ -207,6 +207,7 @@ export default function Page() {
             key={habit.id}
             id={habit.id}
             title={habit.title}
+            initialMarkedDays={habit.marked_days || []}
             onRemove={() => openDeleteModal(habit.id)}
             onRename={(newTitle) => renameHabit(habit.id, newTitle)}
             language={language}
