@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from "react"
-import { Check, Trash2 } from 'lucide-react'
+import { Check, Trash2, Flame } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { supabase } from '../lib/supabase'
 import { User } from '@supabase/supabase-js'
@@ -49,6 +49,55 @@ function generateDates(months: string[], days: string[]): string[][] { // eslint
   return dates
 }
 
+function calculateStreak(markedDays: string[]): number {
+  if (!markedDays.length) return 0
+  
+  const sortedDays = [...markedDays].sort((a, b) => {
+    const [monthA, , dayA, yearA] = a.match(/(\d{2})(\d)(\d{2})-(\d{2})/)?.slice(1) || []
+    const [monthB, , dayB, yearB] = b.match(/(\d{2})(\d)(\d{2})-(\d{2})/)?.slice(1) || []
+    const dateA = new Date(2000 + parseInt(yearA), parseInt(monthA) - 1, parseInt(dayA))
+    const dateB = new Date(2000 + parseInt(yearB), parseInt(monthB) - 1, parseInt(dayB))
+    return dateB.getTime() - dateA.getTime()
+  })
+
+  let streak = 1
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const twoDaysAgo = new Date(today)
+  twoDaysAgo.setDate(today.getDate() - 2)
+  
+  // Obtener la fecha más reciente marcada
+  const [monthRecent, , dayRecent, yearRecent] = sortedDays[0].match(/(\d{2})(\d)(\d{2})-(\d{2})/)?.slice(1) || []
+  const mostRecentDate = new Date(2000 + parseInt(yearRecent), parseInt(monthRecent) - 1, parseInt(dayRecent))
+  mostRecentDate.setHours(0, 0, 0, 0)
+  
+  // Si la fecha más reciente es anterior a hace dos días, no hay racha
+  if (mostRecentDate < twoDaysAgo) return 0
+  
+  // Contar días consecutivos hacia atrás
+  for (let i = 0; i < sortedDays.length - 1; i++) {
+    const [monthCurrent, , dayCurrent, yearCurrent] = sortedDays[i].match(/(\d{2})(\d)(\d{2})-(\d{2})/)?.slice(1) || []
+    const [monthNext, , dayNext, yearNext] = sortedDays[i + 1].match(/(\d{2})(\d)(\d{2})-(\d{2})/)?.slice(1) || []
+    
+    const currentDate = new Date(2000 + parseInt(yearCurrent), parseInt(monthCurrent) - 1, parseInt(dayCurrent))
+    const nextDate = new Date(2000 + parseInt(yearNext), parseInt(monthNext) - 1, parseInt(dayNext))
+    currentDate.setHours(0, 0, 0, 0)
+    nextDate.setHours(0, 0, 0, 0)
+    
+    const diffDays = Math.floor((currentDate.getTime() - nextDate.getTime()) / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 1) {
+      streak++
+    } else {
+      break
+    }
+  }
+  
+  return streak
+}
+
 export default function HabitTracker({ id, title, onRemove, onRename, initialMarkedDays = [], language }: HabitTrackerProps) {
   const t = translations[language]
   const DAYS_OF_WEEK = t.days
@@ -65,6 +114,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const confettiSound = useRef<HTMLAudioElement | null>(null)
+  const [streak, setStreak] = useState(0)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -77,6 +127,10 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
 
     return () => subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    setStreak(calculateStreak(markedDays))
+  }, [markedDays])
 
   const markDay = async (date: string, dayElement: HTMLElement) => {
     let newMarkedDays: string[]
@@ -146,24 +200,32 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
       <audio ref={confettiSound} src="/sounds/cheer-short.mp3" />
 
       <div className="flex justify-between items-center pb-3">
-        {isEditing ? (
-          <input
-            type="text"
-            value={currentTitle}
-            onChange={(e) => setCurrentTitle(e.target.value)}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            autoFocus
-            className="text-xl font-semibold text-white bg-transparent focus:outline-none w-full"
-          />
-        ) : (
-          <h2
-            className="text-xl font-semibold text-white cursor-pointer"
-            onClick={handleRename}
-          >
-            {currentTitle}
-          </h2>
-        )}
+        <div className="flex items-center gap-3">
+          {isEditing ? (
+            <input
+              type="text"
+              value={currentTitle}
+              onChange={(e) => setCurrentTitle(e.target.value)}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              className="text-xl font-semibold text-white bg-transparent focus:outline-none"
+            />
+          ) : (
+            <h2
+              className="text-xl font-semibold text-white cursor-pointer"
+              onClick={handleRename}
+            >
+              {currentTitle}
+            </h2>
+          )}
+          {streak > 0 && (
+            <div className="flex items-center gap-1 bg-orange-500 bg-opacity-20 px-2 py-1 rounded-md">
+              <Flame className="w-4 h-4 text-orange-500" />
+              <span className="text-sm font-medium text-orange-500">{streak}</span>
+            </div>
+          )}
+        </div>
         <div className="flex gap-4 group relative">
           {isHovered && (
             <button 
