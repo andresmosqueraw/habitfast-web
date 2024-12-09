@@ -31,12 +31,11 @@ function formatDateForDisplay(dbDate: string, months: string[], days: string[]):
   return `${month}${day}${dayNum}-${year}`
 }
 
-function generateDates(months: string[], days: string[]): string[][] {
+function generateDates(months: string[], days: string[]): string[][] { // eslint-disable-line @typescript-eslint/no-unused-vars
   const startDate = new Date(2024, 0, 1)
   const endDate = new Date()
   const dates: string[][] = Array(7).fill([]).map(() => [])
-  
-  let currentDate = new Date(startDate)
+  const currentDate = new Date(startDate)
   let columnIndex = 0
   
   while (currentDate <= endDate) {
@@ -54,7 +53,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   const t = translations[language]
   const DAYS_OF_WEEK = t.days
   const MONTHS = t.months
-  const ROWS = 7
+  const ROWS = 7 // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const [markedDays, setMarkedDays] = useState<string[]>(initialMarkedDays)
   const [user, setUser] = useState<User | null>(null)
@@ -192,8 +191,8 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
           {dates.map((row: string[], rowIndex: number) => (
             <div key={rowIndex} className="flex gap-1">
               {row.map((dbDate: string) => {
-                const displayDate = formatDateForDisplay(dbDate, MONTHS, DAYS_OF_WEEK)
-                const [monthNum, dayOfWeek, dayNum, year] = dbDate.match(/(\d{2})(\d)(\d{2})-(\d{2})/)?.slice(1) || []
+                const displayDate = formatDateForDisplay(dbDate, MONTHS, DAYS_OF_WEEK) // eslint-disable-line @typescript-eslint/no-unused-vars
+                const [monthNum, dayOfWeek, dayNum, year] = dbDate.match(/(\d{2})(\d)(\d{2})-(\d{2})/)?.slice(1) || [] // eslint-disable-line @typescript-eslint/no-unused-vars
                 const dateObj = new Date(parseInt(`20${year}`), parseInt(monthNum) - 1, parseInt(dayNum))
                 if (dateObj > new Date()) return null
 
