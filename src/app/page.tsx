@@ -109,22 +109,24 @@ export default function Page() {
   }
 
   const addHabit = async () => {
-    if (!newHabitTitle.trim() || !user) return
+    if (!newHabitTitle.trim()) return
 
     const newHabit = {
       id: Date.now(),
       title: newHabitTitle,
-      user_id: user.id,
+      user_id: user?.id || null,
       marked_days: []
     }
 
-    const { error } = await supabase
-      .from('habits')
-      .insert(newHabit)
+    if (user) {
+      const { error } = await supabase
+        .from('habits')
+        .insert(newHabit)
 
-    if (error) {
-      console.error('Error adding habit:', error)
-      return
+      if (error) {
+        console.error('Error adding habit:', error)
+        return
+      }
     }
 
     setHabits(prevHabits => [...prevHabits, newHabit])

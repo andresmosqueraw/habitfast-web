@@ -79,8 +79,6 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   }, [])
 
   const markDay = async (date: string, dayElement: HTMLElement) => {
-    if (!user) return
-
     let newMarkedDays: string[]
     if (!markedDays.includes(date)) {
       newMarkedDays = [...markedDays, date]
@@ -89,15 +87,17 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
       newMarkedDays = markedDays.filter(day => day !== date)
     }
 
-    const { error } = await supabase
-      .from('habits')
-      .update({ marked_days: newMarkedDays })
-      .eq('id', id)
-      .eq('user_id', user.id)
+    if (user) {
+      const { error } = await supabase
+        .from('habits')
+        .update({ marked_days: newMarkedDays })
+        .eq('id', id)
+        .eq('user_id', user.id)
 
-    if (error) {
-      console.error('Error updating marked days:', error)
-      return
+      if (error) {
+        console.error('Error updating marked days:', error)
+        return
+      }
     }
 
     setMarkedDays(newMarkedDays)
@@ -107,7 +107,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
     const rect = dayElement.getBoundingClientRect()
 
     if (confettiSound.current) {
-      confettiSound.current.volume = 0.10
+      confettiSound.current.volume = 0.05
       confettiSound.current.currentTime = 0
       confettiSound.current.play()
     }
