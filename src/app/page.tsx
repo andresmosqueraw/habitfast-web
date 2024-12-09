@@ -153,12 +153,16 @@ export default function Page() {
   }
 
   const handleLogin = async () => {
+    const redirectURL = process.env.NEXT_PUBLIC_VERCEL_URL 
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/auth/callback`
+      : `${window.location.origin}/auth/callback`;
+
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`
+        redirectTo: redirectURL
       }
-    })
+    });
   }
 
   const toggleLanguage = () => {
