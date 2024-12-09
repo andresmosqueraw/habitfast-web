@@ -107,7 +107,6 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   const [markedDays, setMarkedDays] = useState<string[]>(initialMarkedDays)
   const [user, setUser] = useState<User | null>(null)
   const [isHovered, setIsHovered] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
   const [currentTitle, setCurrentTitle] = useState(title)
   const dates = generateDates(MONTHS, DAYS_OF_WEEK)
   const today = formatDateForDB(new Date())
@@ -179,9 +178,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
 
   const handleMouseEnter = () => setIsHovered(true)
   const handleMouseLeave = () => setIsHovered(false)
-  const handleRename = () => setIsEditing(true)
   const handleBlur = () => {
-    setIsEditing(false)
     onRename(currentTitle.trim())
   }
 
@@ -202,43 +199,38 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
       <div className="flex justify-between items-center pb-3">
         {/* Contenedor del título */}
         <div className="flex items-center gap-3 flex-grow min-w-0 mr-4">
-          {/* Input de edición o título estático */}
-          {isEditing ? (
-            <input
-              type="text"
-              value={currentTitle}
-              onChange={(e) => setCurrentTitle(e.target.value)}
-              onBlur={handleBlur}
-              onKeyDown={handleKeyDown}
-              autoFocus
-              onClick={(e) => {
-                const input = e.target as HTMLInputElement;
+          <input
+            type="text"
+            value={currentTitle}
+            onChange={(e) => setCurrentTitle(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            onClick={(e) => {
+              const input = e.target as HTMLInputElement;
+              const clickPosition = e.clientX - input.getBoundingClientRect().left;
+              if (clickPosition < 10) {
+                input.setSelectionRange(0, 0);
+              } else {
                 input.setSelectionRange(
                   input.selectionStart,
                   input.selectionStart
                 );
-              }}
-              className="text-xl font-semibold text-white bg-transparent focus:outline-none flex-grow break-words"
-              style={{ lineHeight: '1.5', padding: '4px 0' }}
-            />
-          ) : (
-            <h2
-              className="text-xl font-semibold text-white cursor-pointer flex-grow break-words"
-              onClick={handleRename}
-              style={{ lineHeight: '1.5' }}
-            >
-              {currentTitle}
-            </h2>
-          )}
+              }
+            }}
+            className="text-xl font-semibold text-white bg-transparent focus:outline-none flex-grow break-words cursor-pointer"
+            style={{ lineHeight: '1.5', padding: '4px 0' }}
+          />
         </div>
 
         {/* Contenedor de racha y botones */}
         <div className="flex items-center gap-4 shrink-0">
-          {/* Racha */}
+          {/* Racha con texto descriptivo */}
           {streak > 0 && (
-            <div className="flex items-center gap-1 bg-orange-500 bg-opacity-20 px-2 py-1 rounded-md">
+            <div className="flex items-center gap-2 bg-orange-500 bg-opacity-20 px-3 py-1.5 rounded-md">
               <Flame className="w-4 h-4 text-orange-500" />
-              <span className="text-sm font-medium text-orange-500">{streak}</span>
+              <span className="text-sm font-medium text-orange-500">
+                {streak} {t.streakDays}
+              </span>
             </div>
           )}
 

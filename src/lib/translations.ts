@@ -11,7 +11,8 @@ export const translations = {
     deleteConfirmText: "You are about to delete this habit. Do you want to continue?",
     delete: "Delete",
     days: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
-    months: ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+    months: ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
+    streakDays: 'days streak',
   },
   es: {
     loginButton: "Regístrate o Inicia sesión para guardar tu progreso",
@@ -25,7 +26,8 @@ export const translations = {
     deleteConfirmText: "Estás a punto de eliminar este hábito. ¿Quieres continuar?",
     delete: "Eliminar",
     days: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
-    months: ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
+    months: ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'],
+    streakDays: 'días seguidos',
   }
 }
 
