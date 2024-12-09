@@ -200,61 +200,70 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
       <audio ref={confettiSound} src="/sounds/cheer-short.mp3" />
 
       <div className="flex justify-between items-center pb-3">
-  {/* Contenedor del título */}
-  <div className="flex items-center gap-3 flex-grow min-w-0">
-    {/* Input de edición o título estático */}
-    {isEditing ? (
-      <input
-        type="text"
-        value={currentTitle}
-        onChange={(e) => setCurrentTitle(e.target.value)}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        autoFocus
-        className="text-xl font-semibold text-white bg-transparent focus:outline-none flex-grow break-words"
-        style={{ lineHeight: '1.5', padding: '4px 0' }} // Centra verticalmente el texto del input
-      />
-    ) : (
-      <h2
-        className="text-xl font-semibold text-white cursor-pointer flex-grow break-words"
-        onClick={handleRename}
-        style={{ lineHeight: '1.5' }} // Asegura una alineación visual similar
-      >
-        {currentTitle}
-      </h2>
-    )}
-  </div>
+        {/* Contenedor del título */}
+        <div className="flex items-center gap-3 flex-grow min-w-0 mr-4">
+          {/* Input de edición o título estático */}
+          {isEditing ? (
+            <input
+              type="text"
+              value={currentTitle}
+              onChange={(e) => setCurrentTitle(e.target.value)}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              onClick={(e) => {
+                const input = e.target as HTMLInputElement;
+                input.setSelectionRange(
+                  input.selectionStart,
+                  input.selectionStart
+                );
+              }}
+              className="text-xl font-semibold text-white bg-transparent focus:outline-none flex-grow break-words"
+              style={{ lineHeight: '1.5', padding: '4px 0' }}
+            />
+          ) : (
+            <h2
+              className="text-xl font-semibold text-white cursor-pointer flex-grow break-words"
+              onClick={handleRename}
+              style={{ lineHeight: '1.5' }}
+            >
+              {currentTitle}
+            </h2>
+          )}
+        </div>
 
-  {/* Contenedor de racha y botones */}
-  <div className="flex items-center gap-4 shrink-0">
-    {/* Racha */}
-    {streak > 0 && (
-      <div className="flex items-center gap-1 bg-orange-500 bg-opacity-20 px-2 py-1 rounded-md">
-        <Flame className="w-4 h-4 text-orange-500" />
-        <span className="text-sm font-medium text-orange-500">{streak}</span>
+        {/* Contenedor de racha y botones */}
+        <div className="flex items-center gap-4 shrink-0">
+          {/* Racha */}
+          {streak > 0 && (
+            <div className="flex items-center gap-1 bg-orange-500 bg-opacity-20 px-2 py-1 rounded-md">
+              <Flame className="w-4 h-4 text-orange-500" />
+              <span className="text-sm font-medium text-orange-500">{streak}</span>
+            </div>
+          )}
+
+          {/* Botón de eliminar - Ahora solo visible en hover */}
+          {isHovered && (
+            <button 
+              className="p-3 rounded-full transition-transform transform hover:scale-105 bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50"
+              onClick={onRemove}
+            >
+              <Trash2 className="w-5 h-5 text-white" />
+            </button>
+          )}
+
+          {/* Botón de marcar hábito */}
+          <button 
+            ref={buttonRef}
+            className={`p-3 rounded-full transition-transform transform hover:scale-105 ${
+              markedDays.includes(today) ? 'bg-emerald-500' : 'bg-gray-700'
+            } hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-50`}
+            onClick={() => markDay(today, buttonRef.current!)}
+          >
+            <Check className={`w-5 h-5 ${markedDays.includes(today) ? 'text-white' : 'text-emerald-400'}`} />
+          </button>
+        </div>
       </div>
-    )}
-
-    {/* Botón de eliminar */}
-    <button 
-      className="p-3 rounded-full transition-transform transform hover:scale-105 bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50"
-      onClick={onRemove}
-    >
-      <Trash2 className="w-5 h-5 text-white" />
-    </button>
-
-    {/* Botón de marcar hábito */}
-    <button 
-      ref={buttonRef}
-      className={`p-3 rounded-full transition-transform transform hover:scale-105 ${
-        markedDays.includes(today) ? 'bg-emerald-500' : 'bg-gray-700'
-      } hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-50`}
-      onClick={() => markDay(today, buttonRef.current!)}
-    >
-      <Check className={`w-5 h-5 ${markedDays.includes(today) ? 'text-white' : 'text-emerald-400'}`} />
-    </button>
-  </div>
-</div>
 
 
 
