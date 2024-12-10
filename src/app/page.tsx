@@ -175,7 +175,7 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-1">
-      <div className="max-w-4xl mx-auto space-y-10">
+      <div className="max-w-6xl mx-auto space-y-10">
         {/* Header con Login y Language Selector */}
         <div className="relative flex justify-center pt-4">
           {/* Login Button */}
