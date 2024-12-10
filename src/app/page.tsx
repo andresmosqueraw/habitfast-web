@@ -174,32 +174,29 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-1">
       <div className="max-w-4xl mx-auto space-y-10">
-        {/* Language Selector - Posicionado en la esquina superior derecha */}
-        <div className="absolute top-4 right-4">
-          <div className="relative inline-block">
+        {/* Header con Login y Language Selector */}
+        <div className="relative flex justify-center pt-4">
+          {/* Login Button */}
+          {!user && (
             <button
-              className="flex items-center space-x-2 text-white text-sm bg-gray-800 bg-opacity-50 px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-              onClick={toggleLanguage}
-            >
-              <Globe className="w-4 h-4" />
-              <span>{language.toUpperCase()}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Login/Register Section */}
-        {!user && (
-          <div className="text-center py-4">
-            <button
-              className="text-white text-sm font-medium bg-gray-800 bg-opacity-50 px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              className="text-white text-lg font-medium bg-gray-800 bg-opacity-50 px-8 py-3 rounded-lg hover:bg-gray-700 transition-colors shadow-lg hover:scale-105 transform duration-200"
               onClick={handleLogin}
             >
               {t.loginButton}
             </button>
-          </div>
-        )}
+          )}
+          
+          {/* Language Selector */}
+          <button
+            className="absolute right-0 top-4 flex items-center space-x-2 text-white text-sm bg-gray-800 bg-opacity-50 px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+            onClick={toggleLanguage}
+          >
+            <Globe className="w-4 h-4" />
+            <span>{language.toUpperCase()}</span>
+          </button>
+        </div>
 
         {/* Title and Description */}
         <div className="text-center space-y-2">
@@ -222,10 +219,10 @@ export default function Page() {
 
         {/* Create New Habit Button */}
         <Button 
-          className="w-full bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-3xl p-8 shadow-2xl text-white text-xl font-semibold hover:bg-gray-700 transition-colors duration-300"
+          className="w-full bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-3xl p-10 shadow-2xl text-white text-2xl font-semibold hover:bg-gray-700 transition-colors duration-300 hover:scale-[1.02] transform"
           onClick={openModal}
         >
-          <Plus className="mr-2 h-6 w-6" /> {t.createButton}
+          <Plus className="mr-3 h-8 w-8" /> {t.createButton}
         </Button>
       </div>
 
