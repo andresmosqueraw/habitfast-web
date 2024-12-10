@@ -198,7 +198,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
 
       <div className="flex justify-between items-center pb-3">
         {/* Contenedor del título */}
-        <div className="flex items-center gap-3 flex-grow min-w-0 mr-4">
+        <div className="flex-1 min-w-0 mr-6">
           <input
             type="text"
             value={currentTitle}
@@ -217,7 +217,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
                 );
               }
             }}
-            className="text-xl font-semibold text-white bg-transparent focus:outline-none flex-grow break-words cursor-pointer"
+            className="text-xl font-semibold text-white bg-transparent focus:outline-none w-full truncate cursor-pointer"
             style={{ lineHeight: '1.5', padding: '4px 0' }}
           />
         </div>
@@ -226,7 +226,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
         <div className="flex items-center gap-4 shrink-0">
           {/* Racha con texto descriptivo */}
           {streak > 0 && (
-            <div className="flex items-center gap-2 bg-orange-500 bg-opacity-20 px-3 py-1.5 rounded-md">
+            <div className="flex items-center gap-2 bg-orange-500 bg-opacity-20 px-3 py-1.5 rounded-md whitespace-nowrap">
               <Flame className="w-4 h-4 text-orange-500" />
               <span className="text-sm font-medium text-orange-500">
                 {streak} {t.streakDays}

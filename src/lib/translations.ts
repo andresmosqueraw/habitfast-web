@@ -1,7 +1,7 @@
 export const translations = {
   en: {
     loginButton: "Sign in or Register to save your progress",
-    subtitle: "Change Your Life One Habit at a Time",
+    subtitle: "Habit Tracker - Change Your Life One Habit at a Time",
     createButton: "Create",
     newHabitTitle: "New Habit",
     habitNamePlaceholder: "Enter habit name",
@@ -16,7 +16,7 @@ export const translations = {
   },
   es: {
     loginButton: "Regístrate o Inicia sesión para guardar tu progreso",
-    subtitle: "Cambia Tu Vida Un Hábito a la Vez",
+    subtitle: "Rastreador de Hábitos - Cambia Tu Vida Un Hábito a la Vez",
     createButton: "Crear",
     newHabitTitle: "Nuevo Hábito",
     habitNamePlaceholder: "Ingresa el nombre del hábito",
