@@ -241,6 +241,16 @@ export default function Page() {
           <Plus className="mr-3 h-8 w-8" /> {t.createButton}
         </Button>
 
+        {/* Additional Information */}
+        <div className="text-center space-y-2 text-gray-400">
+          <p>
+            Made with ❤️ by <a href="https://linktr.ee/andrewmos" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">Andres Mosquera</a>
+          </p>
+          <p>
+            <a href="https://github.com/andresmosqueraw/habitfast-web" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">HabitFast is Open Source</a>
+          </p>
+        </div>
+
         {/* Audio element for hover sound */}
         <audio ref={hoverSoundRef} src="/sounds/hover-sound-effect.mp3" />
       </div>
