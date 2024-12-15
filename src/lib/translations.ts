@@ -17,6 +17,10 @@ export const translations = {
       title: "Habit Tracker - Simple Online Habit Tracker App & Website",
       description: "Goal Tracker & Daily Planner",
     },
+    additionalInfo: {
+      madeWithLove: "Made with ❤️ by",
+      openSource: "HabitFast is Open Source",
+    },
   },
   es: {
     loginButton: "Regístrate o Inicia sesión para guardar tu progreso",
@@ -35,6 +39,10 @@ export const translations = {
     metadata: {
       title: "Rastreador de Hábitos - Aplicación y Sitio Web de Rastreo de Hábitos en Línea",
       description: "Rastreador de Metas y Planificador Diario",
+    },
+    additionalInfo: {
+      madeWithLove: "Hecho con ❤️ por",
+      openSource: "HabitFast es de código abierto",
     },
   }
 }

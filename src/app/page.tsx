@@ -244,10 +244,10 @@ export default function Page() {
         {/* Additional Information */}
         <div className="text-center space-y-2 text-gray-400">
           <p>
-            Made with ❤️ by <a href="https://linktr.ee/andrewmos" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">Andres Mosquera</a>
+            {t.additionalInfo.madeWithLove} <a href="https://linktr.ee/andrewmos" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">Andres Mosquera</a>
           </p>
           <p>
-            <a href="https://github.com/andresmosqueraw/habitfast-web" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">HabitFast is Open Source</a>
+            <a href="https://github.com/andresmosqueraw/habitfast-web" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">{t.additionalInfo.openSource}</a>
           </p>
         </div>
 
