@@ -70,9 +70,22 @@ export default function Page() {
       setLanguage(savedLanguage)
     }
 
-    // Directly schedule notifications for testing purposes
-    scheduleNotifications()
+    // Check notification permission on every page load
+    if (Notification.permission === 'default') {
+      setShowNotificationPrompt(true)
+    } else if (Notification.permission === 'granted') {
+      scheduleNotifications()
+    }
   }, [])
+
+  const requestNotificationPermission = () => {
+    Notification.requestPermission().then(permission => {
+      if (permission === 'granted') {
+        scheduleNotifications()
+      }
+      setShowNotificationPrompt(false) // Hide prompt after requesting permission
+    })
+  }
 
   const scheduleNotifications = () => {
     const now = new Date()
@@ -204,11 +217,6 @@ export default function Page() {
       hoverSoundRef.current.currentTime = 0;
       hoverSoundRef.current.play();
     }
-  }
-
-  function requestNotificationPermission(event: React.MouseEvent<HTMLButtonElement>): void {
-    // Implement your logic here
-    console.log('Notification permission requested');
   }
 
   return (
