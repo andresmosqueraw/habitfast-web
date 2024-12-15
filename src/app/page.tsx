@@ -23,10 +23,10 @@ export default function Page() {
   const [newHabitTitle, setNewHabitTitle] = useState("")
   const [user, setUser] = useState<User | null>(null)
   const [language, setLanguage] = useState<Language>('en')
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false)
   const t = translations[language]
   const hoverSoundRef = useRef<HTMLAudioElement | null>(null)
 
-  // Cargar hábitos al iniciar sesión
   useEffect(() => {
     const loadHabits = async (userId: string) => {
       const { data, error } = await supabase
@@ -69,7 +69,45 @@ export default function Page() {
     if (savedLanguage) {
       setLanguage(savedLanguage)
     }
+
+    // Check notification permission on every page load
+    if (Notification.permission === 'default') {
+      setShowNotificationPrompt(true)
+    } else if (Notification.permission === 'granted') {
+      scheduleNotifications()
+    }
   }, [])
+
+  const requestNotificationPermission = () => {
+    Notification.requestPermission().then(permission => {
+      if (permission === 'granted') {
+        scheduleNotifications()
+      }
+      setShowNotificationPrompt(false) // Hide prompt after requesting permission
+    })
+  }
+
+  const scheduleNotifications = () => {
+    const now = new Date()
+    const times = [
+      { hour: 11, minute: 0 },
+      { hour: 20, minute: 0 }
+    ]
+
+    times.forEach(({ hour, minute }) => {
+      const notificationTime = new Date()
+      notificationTime.setHours(hour, minute, 0, 0)
+
+      if (notificationTime < now) {
+        notificationTime.setDate(notificationTime.getDate() + 1)
+      }
+
+      const timeout = notificationTime.getTime() - now.getTime()
+      setTimeout(() => {
+        new Notification("Don't forget to mark your habits!")
+      }, timeout)
+    })
+  }
 
   const removeHabit = async (habitId: number) => {
     if (!user) return
@@ -254,6 +292,22 @@ export default function Page() {
         {/* Audio element for hover sound */}
         <audio ref={hoverSoundRef} src="/sounds/hover-sound-effect.mp3" />
       </div>
+
+      {/* Notification Prompt */}
+      {showNotificationPrompt && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+          <div className="bg-gray-800 p-6 rounded-xl w-80 shadow-2xl">
+            <h2 className="text-xl font-semibold text-white mb-4">{t.notifications.enablePromptTitle}</h2>
+            <p className="text-gray-300 mb-4">{t.notifications.enablePromptText}</p>
+            <button
+              onClick={requestNotificationPermission}
+              className="w-full px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-400 transition-colors"
+            >
+              {t.notifications.enableButton}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal for New Habit */}
       {isModalOpen && (

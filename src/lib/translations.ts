@@ -21,6 +21,11 @@ export const translations = {
       madeWithLove: "Made with ❤️ by",
       openSource: "HabitFast is Open Source",
     },
+    notifications: {
+      enablePromptTitle: "Enable Notifications",
+      enablePromptText: "Stay on track with your habits by enabling notifications.",
+      enableButton: "Enable Notifications",
+    },
   },
   es: {
     loginButton: "Regístrate o Inicia sesión para guardar tu progreso",
@@ -43,6 +48,11 @@ export const translations = {
     additionalInfo: {
       madeWithLove: "Hecho con ❤️ por",
       openSource: "HabitFast es de código abierto",
+    },
+    notifications: {
+      enablePromptTitle: "Activar Notificaciones",
+      enablePromptText: "Mantente al día con tus hábitos activando las notificaciones.",
+      enableButton: "Activar Notificaciones",
     },
   }
 }
