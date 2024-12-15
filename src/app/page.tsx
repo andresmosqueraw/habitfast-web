@@ -177,7 +177,16 @@ export default function Page() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-1">
       <div className="max-w-6xl mx-auto space-y-2">
         {/* Header con Login y Language Selector */}
-        <div className="relative flex justify-center pt-4">
+        <div className="relative flex flex-col items-center pt-4 space-y-2">
+          {/* Language Selector */}
+          <button
+            className="flex items-center space-x-2 text-white text-sm bg-gray-800 bg-opacity-50 px-4 py-1 rounded-lg hover:bg-gray-700 transition-colors"
+            onClick={toggleLanguage}
+          >
+            <Globe className="w-4 h-4" />
+            <span>{language.toUpperCase()}</span>
+          </button>
+
           {/* Login Button */}
           {!user && (
             <button
@@ -187,20 +196,11 @@ export default function Page() {
               {t.loginButton}
             </button>
           )}
-          
-          {/* Language Selector */}
-          <button
-            className="absolute left-1/2 transform -translate-x-1/2 top-4 flex items-center space-x-2 text-white text-sm bg-gray-800 bg-opacity-50 px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-            onClick={toggleLanguage}
-          >
-            <Globe className="w-4 h-4" />
-            <span>{language.toUpperCase()}</span>
-          </button>
         </div>
 
         {/* Title and Description */}
         <div className="text-center space-y-1">
-          <h1 className="text-5xl pt-10 font-bold text-white tracking-tight flex items-center justify-center">
+          <h1 className="text-5xl pt-1 font-bold text-white tracking-tight flex items-center justify-center">
             <img 
               src="/images/logo-b-blue.svg" 
               alt="Logo" 
