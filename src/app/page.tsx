@@ -200,7 +200,14 @@ export default function Page() {
 
         {/* Title and Description */}
         <div className="text-center space-y-2">
-          <h1 className="text-5xl pt-3 font-bold text-white tracking-tight">HabitFast</h1>
+          <h1 className="text-5xl pt-3 font-bold text-white tracking-tight flex items-center justify-center">
+            <img 
+              src="/images/logo-b-blue.svg" 
+              alt="Logo" 
+              className="h-12 w-12"
+            />
+            HabitFast
+          </h1>
           <p className="text-xl text-gray-300">{t.subtitle}</p>
         </div>
 
