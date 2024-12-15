@@ -1,7 +1,7 @@
 export const translations = {
   en: {
     loginButton: "Sign in or Register to save your progress",
-    subtitle: "Habit Tracker - Change Your Life One Habit at a Time",
+    subtitle: "We are what we repeatedly do. Excellence, then, is not an act, but a habit ~ Aristotle",
     createButton: "Create",
     newHabitTitle: "New Habit",
     habitNamePlaceholder: "Enter habit name",
@@ -16,7 +16,7 @@ export const translations = {
   },
   es: {
     loginButton: "Regístrate o Inicia sesión para guardar tu progreso",
-    subtitle: "Rastreador de Hábitos - Cambia Tu Vida Un Hábito a la Vez",
+    subtitle: "Somos lo que hacemos repetidamente. La excelencia, entonces, no es un acto, es un hábito ~ Aristóteles",
     createButton: "Crear",
     newHabitTitle: "Nuevo Hábito",
     habitNamePlaceholder: "Ingresa el nombre del hábito",

@@ -175,7 +175,7 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-1">
-      <div className="max-w-6xl mx-auto space-y-10">
+      <div className="max-w-6xl mx-auto space-y-2">
         {/* Header con Login y Language Selector */}
         <div className="relative flex justify-center pt-4">
           {/* Login Button */}
@@ -190,7 +190,7 @@ export default function Page() {
           
           {/* Language Selector */}
           <button
-            className="absolute right-0 top-4 flex items-center space-x-2 text-white text-sm bg-gray-800 bg-opacity-50 px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+            className="absolute left-1/2 transform -translate-x-1/2 top-4 flex items-center space-x-2 text-white text-sm bg-gray-800 bg-opacity-50 px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
             onClick={toggleLanguage}
           >
             <Globe className="w-4 h-4" />
@@ -199,8 +199,8 @@ export default function Page() {
         </div>
 
         {/* Title and Description */}
-        <div className="text-center space-y-2">
-          <h1 className="text-5xl pt-3 font-bold text-white tracking-tight flex items-center justify-center">
+        <div className="text-center space-y-1">
+          <h1 className="text-5xl pt-10 font-bold text-white tracking-tight flex items-center justify-center">
             <img 
               src="/images/logo-b-blue.svg" 
               alt="Logo" 
@@ -226,7 +226,7 @@ export default function Page() {
 
         {/* Create New Habit Button */}
         <Button 
-          className="w-full bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-3xl p-10 shadow-2xl text-white text-2xl font-semibold hover:bg-gray-700 transition-colors duration-300 hover:scale-[1.02] transform"
+          className="w-full bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-3xl p-10 shadow-2xl text-white text-2xl font-semibold hover:bg-gray-700 transition-colors duration-300 hover:scale-[1.02] transform mb-12"
           onClick={openModal}
         >
           <Plus className="mr-3 h-8 w-8" /> {t.createButton}
