@@ -3,7 +3,7 @@
 import HabitTracker from '../components/habit-tracker'
 import { Button } from "../components/ui/button"
 import { Plus } from 'lucide-react'
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { supabase } from '../lib/supabase'
 import { User } from '@supabase/supabase-js'
 import { translations, Language } from '../lib/translations'
@@ -24,6 +24,7 @@ export default function Page() {
   const [user, setUser] = useState<User | null>(null)
   const [language, setLanguage] = useState<Language>('en')
   const t = translations[language]
+  const hoverSoundRef = useRef<HTMLAudioElement | null>(null)
 
   // Cargar hábitos al iniciar sesión
   useEffect(() => {
@@ -173,6 +174,13 @@ export default function Page() {
     localStorage.setItem('language', newLanguage)
   }
 
+  const playHoverSound = () => {
+    if (hoverSoundRef.current) {
+      hoverSoundRef.current.currentTime = 0;
+      hoverSoundRef.current.play();
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-1">
       <div className="max-w-6xl mx-auto space-y-2">
@@ -228,9 +236,13 @@ export default function Page() {
         <Button 
           className="w-full bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-3xl p-10 shadow-2xl text-white text-2xl font-semibold hover:bg-gray-700 transition-colors duration-300 hover:scale-[1.02] transform mb-12"
           onClick={openModal}
+          onMouseEnter={playHoverSound}
         >
           <Plus className="mr-3 h-8 w-8" /> {t.createButton}
         </Button>
+
+        {/* Audio element for hover sound */}
+        <audio ref={hoverSoundRef} src="/sounds/hover-sound-effect.mp3" />
       </div>
 
       {/* Modal for New Habit */}

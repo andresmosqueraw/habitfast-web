@@ -114,6 +114,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   const buttonRef = useRef<HTMLButtonElement>(null)
   const confettiSound = useRef<HTMLAudioElement | null>(null)
   const [streak, setStreak] = useState(0)
+  const hoverSoundRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -188,6 +189,13 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
     }
   }
 
+  const playHoverSound = () => {
+    if (hoverSoundRef.current) {
+      hoverSoundRef.current.currentTime = 0;
+      hoverSoundRef.current.play();
+    }
+  };
+
   return (
     <div 
       className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-xl p-4 shadow-lg"
@@ -195,6 +203,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
       onMouseLeave={handleMouseLeave}
     >
       <audio ref={confettiSound} src="/sounds/cheer-short.mp3" />
+      <audio ref={hoverSoundRef} src="/sounds/hover-sound-effect.mp3" />
 
       <div className="flex justify-between items-center pb-3">
         {/* Contenedor del título */}
@@ -251,6 +260,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
               markedDays.includes(today) ? 'bg-emerald-500' : 'bg-gray-700'
             } hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-opacity-50`}
             onClick={() => markDay(today, buttonRef.current!)}
+            onMouseEnter={playHoverSound}
           >
             <Check className={`w-5 h-5 ${markedDays.includes(today) ? 'text-white' : 'text-emerald-400'}`} />
           </button>
