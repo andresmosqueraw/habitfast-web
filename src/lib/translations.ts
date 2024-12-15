@@ -13,6 +13,10 @@ export const translations = {
     days: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
     months: ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
     streakDays: 'days streak',
+    metadata: {
+      title: "Habit Tracker - Simple Online Habit Tracker App & Website",
+      description: "Goal Tracker & Daily Planner",
+    },
   },
   es: {
     loginButton: "Regístrate o Inicia sesión para guardar tu progreso",
@@ -28,6 +32,10 @@ export const translations = {
     days: ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
     months: ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'],
     streakDays: 'días seguidos',
+    metadata: {
+      title: "Rastreador de Hábitos - Aplicación y Sitio Web de Rastreo de Hábitos en Línea",
+      description: "Rastreador de Metas y Planificador Diario",
+    },
   }
 }
 
