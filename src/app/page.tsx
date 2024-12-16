@@ -24,45 +24,49 @@ export default function Page() {
   const [user, setUser] = useState<User | null>(null)
   const [language, setLanguage] = useState<Language>('en')
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false)
+  const [errorLog, setErrorLog] = useState<string | null>(null)
   const t = translations[language]
   const hoverSoundRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
     const loadHabits = async (userId: string) => {
-      const { data, error } = await supabase
-        .from('habits')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true })
+      try {
+        const { data, error } = await supabase
+          .from('habits')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error('Error loading habits:', error)
-        return
+        if (error) throw error;
+
+        setHabits(data || []);
+      } catch (error) {
+        const err = error as Error;
+        console.error('Error loading habits:', err);
+        setErrorLog(`Error loading habits: ${err.message}`);
       }
-
-      setHabits(data || [])
-    }
+    };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      const currentUser = session?.user
-      setUser(currentUser ?? null)
+      const currentUser = session?.user;
+      setUser(currentUser ?? null);
       if (currentUser) {
-        loadHabits(currentUser.id)
+        loadHabits(currentUser.id);
       }
-    })
+    });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      const currentUser = session?.user
-      setUser(currentUser ?? null)
+      const currentUser = session?.user;
+      setUser(currentUser ?? null);
       if (currentUser) {
-        loadHabits(currentUser.id)
+        loadHabits(currentUser.id);
       } else {
-        setHabits([])
+        setHabits([]);
       }
-    })
+    });
 
-    return () => subscription.unsubscribe()
-  }, [])
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language') as Language
@@ -112,39 +116,45 @@ export default function Page() {
   const removeHabit = async (habitId: number) => {
     if (!user) return
 
-    const { error } = await supabase
-      .from('habits')
-      .delete()
-      .eq('id', habitId)
-      .eq('user_id', user.id)
+    try {
+      const { error } = await supabase
+        .from('habits')
+        .delete()
+        .eq('id', habitId)
+        .eq('user_id', user.id)
 
-    if (error) {
-      console.error('Error removing habit:', error)
-      return
+      if (error) throw error;
+
+      setHabits(habits.filter(habit => habit.id !== habitId))
+    } catch (error) {
+      const err = error as Error;
+      console.error('Error removing habit:', err);
+      setErrorLog(`Error removing habit: ${err.message}`);
     }
-
-    setHabits(habits.filter(habit => habit.id !== habitId))
   }
 
   const renameHabit = async (habitId: number, newTitle: string) => {
     if (!user) return
 
-    const { error } = await supabase
-      .from('habits')
-      .update({ title: newTitle })
-      .eq('id', habitId)
-      .eq('user_id', user.id)
+    try {
+      const { error } = await supabase
+        .from('habits')
+        .update({ title: newTitle })
+        .eq('id', habitId)
+        .eq('user_id', user.id)
 
-    if (error) {
-      console.error('Error renaming habit:', error)
-      return
-    }
+      if (error) throw error;
 
-    setHabits((prevHabits) =>
-      prevHabits.map((habit) =>
-        habit.id === habitId ? { ...habit, title: newTitle } : habit
+      setHabits((prevHabits) =>
+        prevHabits.map((habit) =>
+          habit.id === habitId ? { ...habit, title: newTitle } : habit
+        )
       )
-    )
+    } catch (error) {
+      const err = error as Error;
+      console.error('Error renaming habit:', err);
+      setErrorLog(`Error renaming habit: ${err.message}`);
+    }
   }
 
   const addHabit = async () => {
@@ -157,20 +167,23 @@ export default function Page() {
       marked_days: []
     }
 
-    if (user) {
-      const { error } = await supabase
-        .from('habits')
-        .insert(newHabit)
+    try {
+      if (user) {
+        const { error } = await supabase
+          .from('habits')
+          .insert(newHabit)
 
-      if (error) {
-        console.error('Error adding habit:', error)
-        return
+        if (error) throw error;
       }
-    }
 
-    setHabits(prevHabits => [...prevHabits, newHabit])
-    setNewHabitTitle("")
-    setIsModalOpen(false)
+      setHabits(prevHabits => [...prevHabits, newHabit])
+      setNewHabitTitle("")
+      setIsModalOpen(false)
+    } catch (error) {
+      const err = error as Error;
+      console.error('Error adding habit:', err);
+      setErrorLog(`Error adding habit: ${err.message}`);
+    }
   }
 
   const openModal = () => setIsModalOpen(true)
@@ -288,6 +301,13 @@ export default function Page() {
             <a href="https://github.com/andresmosqueraw/habitfast-web" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">{t.additionalInfo.openSource}</a>
           </p>
         </div>
+
+        {/* Error Log Display */}
+        {errorLog && (
+          <div className="bg-red-500 text-white p-4 rounded-md mt-4">
+            {errorLog}
+          </div>
+        )}
 
         {/* Audio element for hover sound */}
         <audio ref={hoverSoundRef} src="/sounds/hover-sound-effect.mp3" />
