@@ -22,13 +22,6 @@ function formatDateForDB(date: Date): string {
   return `${month}${dayOfWeek}${dayNumber}-${year}`
 }
 
-function formatDateForDisplay(dbDate: string, months: string[], days: string[]): string {
-  const [monthNum, dayOfWeek, dayNum, year] = dbDate.match(/(\d{2})(\d)(\d{2})-(\d{2})/)?.slice(1) || []
-  const month = months[parseInt(monthNum) - 1]
-  const day = days[parseInt(dayOfWeek)]
-  return `${month}${day}${dayNum}-${year}`
-}
-
 function generateDates(months: string[], days: string[]): string[][] { // eslint-disable-line @typescript-eslint/no-unused-vars
   const startDate = new Date(2023, 4, 1)
   const endDate = new Date()
@@ -130,12 +123,15 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   }, [markedDays])
 
   const markDay = async (date: string, dayElement: HTMLElement) => {
-    let newMarkedDays: string[]
+    let newMarkedDays: string[];
+
     if (!markedDays.includes(date)) {
-      newMarkedDays = [...markedDays, date]
-      triggerConfetti(dayElement)
+      newMarkedDays = [...markedDays, date];
+      setMarkedDays(newMarkedDays);
+      triggerConfetti(dayElement);
     } else {
-      newMarkedDays = markedDays.filter(day => day !== date)
+      newMarkedDays = markedDays.filter(day => day !== date);
+      setMarkedDays(newMarkedDays);
     }
 
     if (user) {
@@ -143,16 +139,14 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
         .from('habits')
         .update({ marked_days: newMarkedDays })
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('user_id', user.id);
 
       if (error) {
-        console.error('Error updating marked days:', error)
-        return
+        console.error('Error updating marked days:', error);
+        setMarkedDays(markedDays);
       }
     }
-
-    setMarkedDays(newMarkedDays)
-  }
+  };
 
   const triggerConfetti = (dayElement: HTMLElement) => {
     const rect = dayElement.getBoundingClientRect()

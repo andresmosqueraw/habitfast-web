@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react'
 import { useState, useEffect, useRef } from "react"
 import { supabase } from '../lib/supabase'
 import { User } from '@supabase/supabase-js'
+import Image from 'next/image';
 
 interface Habit {
   id: number;
@@ -69,7 +70,7 @@ export default function Page() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [defaultHabits]);
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language')
@@ -234,7 +235,7 @@ export default function Page() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-1">
       <nav className="bg-gray-800 bg-opacity-50 p-4 flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <img src="/images/logo-b-blue.svg" alt="Logo" className="h-12 w-12" />
+          <Image src="/images/logo-b-blue.svg" alt="Logo" className="h-12 w-12" width={48} height={48} />
           <h1 className="text-2xl font-bold text-white">HabitFast</h1>
         </div>
         <div className="flex items-center space-x-4">
