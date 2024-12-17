@@ -266,7 +266,7 @@ export default function Page() {
       </div>
 
       <div className="text-center text-gray-300 mt-4">
-        <p>We are what we repeatedly do. Excellence, then is not an act but a habit. ~Will Durant</p>
+        <p>We are what we repeatedly do. Excellence, then is not an act but a habit. ~Aristotle</p>
       </div>
 
       <div className="max-w-6xl mx-auto space-y-2 mt-4">
