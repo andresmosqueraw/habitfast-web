@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { translations, Language } from "../lib/translations";
-
+  
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -14,12 +13,9 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-const currentLanguage: Language = 'en';
-const t = translations[currentLanguage].metadata;
-
 export const metadata: Metadata = {
-  title: t.title,
-  description: t.description,
+  title: 'HabitFast',
+  description: 'HabitFast is a simple habit tracker that helps you build good habits and break bad ones.',
 };
 
 export default function RootLayout({
@@ -28,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang={currentLanguage}>
+    <html lang="en">
       <head>
         <link rel="icon" href="/images/logo.svg" type="image/svg+xml" />
       </head>

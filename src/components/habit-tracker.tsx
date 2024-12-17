@@ -5,7 +5,6 @@ import { Check, Trash2, Flame } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { supabase } from '../lib/supabase'
 import { User } from '@supabase/supabase-js'
-import { translations } from '../lib/translations'
 
 interface HabitTrackerProps {
   id: number;
@@ -13,7 +12,6 @@ interface HabitTrackerProps {
   onRemove: () => void;
   onRename: (newTitle: string) => void;
   initialMarkedDays?: string[];
-  language: 'en' | 'es';
 }
 
 function formatDateForDB(date: Date): string {
@@ -32,7 +30,7 @@ function formatDateForDisplay(dbDate: string, months: string[], days: string[]):
 }
 
 function generateDates(months: string[], days: string[]): string[][] { // eslint-disable-line @typescript-eslint/no-unused-vars
-  const startDate = new Date(2024, 0, 1)
+  const startDate = new Date(2023, 4, 1)
   const endDate = new Date()
   const dates: string[][] = Array(7).fill([]).map(() => [])
   const currentDate = new Date(startDate)
@@ -98,10 +96,9 @@ function calculateStreak(markedDays: string[]): number {
   return streak
 }
 
-export default function HabitTracker({ id, title, onRemove, onRename, initialMarkedDays = [], language }: HabitTrackerProps) {
-  const t = translations[language]
-  const DAYS_OF_WEEK = t.days
-  const MONTHS = t.months
+export default function HabitTracker({ id, title, onRemove, onRename, initialMarkedDays = [] }: HabitTrackerProps) {
+  const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const ROWS = 7 // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const [markedDays, setMarkedDays] = useState<string[]>(initialMarkedDays)
@@ -191,6 +188,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
 
   const playHoverSound = () => {
     if (hoverSoundRef.current) {
+      hoverSoundRef.current.volume = 0.2
       hoverSoundRef.current.currentTime = 0;
       hoverSoundRef.current.play();
     }
@@ -237,8 +235,11 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
           {streak > 0 && (
             <div className="flex items-center gap-2 bg-orange-500 bg-opacity-20 px-3 py-1.5 rounded-md whitespace-nowrap">
               <Flame className="w-4 h-4 text-orange-500" />
-              <span className="text-sm font-medium text-orange-500">
-                {streak} {t.streakDays}
+              <span className="text-sm font-medium text-orange-500 hidden sm:inline">
+                {streak} days streak
+              </span>
+              <span className="text-sm font-medium text-orange-500 sm:hidden">
+                {streak}
               </span>
             </div>
           )}
@@ -267,34 +268,32 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
         </div>
       </div>
 
-
-
-      <div className="overflow-x-auto" ref={scrollContainerRef}>
+      <div className="overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} ref={scrollContainerRef}>
         <div className="grid grid-rows-7 grid-flow-col gap-1 min-w-max">
           {dates.map((row: string[], rowIndex: number) => (
             <div key={rowIndex} className="flex gap-1">
               {row.map((dbDate: string) => {
-                const displayDate = formatDateForDisplay(dbDate, MONTHS, DAYS_OF_WEEK) // eslint-disable-line @typescript-eslint/no-unused-vars
-                const [monthNum, dayOfWeek, dayNum, year] = dbDate.match(/(\d{2})(\d)(\d{2})-(\d{2})/)?.slice(1) || [] // eslint-disable-line @typescript-eslint/no-unused-vars
+                const [monthNum, dayOfWeek, dayNum, year] = dbDate.match(/(\d{2})(\d)(\d{2})-(\d{2})/)?.slice(1) || []
                 const dateObj = new Date(parseInt(`20${year}`), parseInt(monthNum) - 1, parseInt(dayNum))
                 if (dateObj > new Date()) return null
+
+                const tooltipText = `${DAYS_OF_WEEK[parseInt(dayOfWeek)]}, ${dayNum} ${MONTHS[parseInt(monthNum) - 1]} 20${year}`;
 
                 return (
                   <div
                     key={dbDate}
                     onClick={(e) => markDay(dbDate, e.currentTarget)}
                     className={`
-                      w-8 h-8 rounded-md text-[8px] font-medium
-                      flex flex-col items-center justify-center
+                      w-4 h-4 rounded-md
                       transition-colors duration-200 cursor-pointer
                       ${markedDays.includes(dbDate)
                         ? 'bg-emerald-500 text-white shadow-md' 
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        : 'bg-gray-700 hover:bg-gray-600'
                       }
                     `}
+                    title={tooltipText}
                   >
-                    <span className="text-[9px] font-bold">{MONTHS[parseInt(monthNum) - 1]}</span>
-                    <span className="text-[10px]">{dayNum}</span>
+                    {/* Removed text elements */}
                   </div>
                 )
               })}

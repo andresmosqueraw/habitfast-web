@@ -6,7 +6,6 @@ import { Plus } from 'lucide-react'
 import { useState, useEffect, useRef } from "react"
 import { supabase } from '../lib/supabase'
 import { User } from '@supabase/supabase-js'
-import { translations, Language } from '../lib/translations'
 import { Globe } from 'lucide-react'
 
 interface Habit {
@@ -22,10 +21,8 @@ export default function Page() {
   const [habitToDelete, setHabitToDelete] = useState<number | null>(null)
   const [newHabitTitle, setNewHabitTitle] = useState("")
   const [user, setUser] = useState<User | null>(null)
-  const [language, setLanguage] = useState<Language>('en')
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false)
   const [errorLog, setErrorLog] = useState<string | null>(null)
-  const t = translations[language]
   const hoverSoundRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
@@ -69,9 +66,9 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') as Language
+    const savedLanguage = localStorage.getItem('language')
     if (savedLanguage) {
-      setLanguage(savedLanguage)
+      // setLanguage(savedLanguage)
     }
 
     // Check notification permission on every page load
@@ -219,12 +216,6 @@ export default function Page() {
     });
   }
 
-  const toggleLanguage = () => {
-    const newLanguage = language === 'en' ? 'es' : 'en'
-    setLanguage(newLanguage)
-    localStorage.setItem('language', newLanguage)
-  }
-
   const playHoverSound = () => {
     if (hoverSoundRef.current) {
       hoverSoundRef.current.currentTime = 0;
@@ -238,13 +229,13 @@ export default function Page() {
         {/* Header con Login y Language Selector */}
         <div className="relative flex flex-col items-center pt-4 space-y-2">
           {/* Language Selector */}
-          <button
+          {/* <button
             className="flex items-center space-x-2 text-white text-sm bg-gray-800 bg-opacity-50 px-4 py-1 rounded-lg hover:bg-gray-700 transition-colors"
             onClick={toggleLanguage}
           >
             <Globe className="w-4 h-4" />
             <span>{language.toUpperCase()}</span>
-          </button>
+          </button> */}
 
           {/* Login Button */}
           {!user && (
@@ -252,7 +243,7 @@ export default function Page() {
               className="text-white text-lg font-medium bg-gray-800 bg-opacity-50 px-8 py-3 rounded-lg hover:bg-gray-700 transition-colors shadow-lg hover:scale-105 transform duration-200"
               onClick={handleLogin}
             >
-              {t.loginButton}
+              Sign in or Register to save your progress
             </button>
           )}
         </div>
@@ -267,7 +258,7 @@ export default function Page() {
             />
             HabitFast
           </h1>
-          <p className="text-xl text-gray-300">{t.subtitle}</p>
+          <p className="text-xl text-gray-300">We are what we repeatedly do. Excellence, then, is not an act, but a habit ~ Aristotle</p>
         </div>
 
         {/* Habit Trackers */}
@@ -279,7 +270,6 @@ export default function Page() {
             initialMarkedDays={habit.marked_days || []}
             onRemove={() => openDeleteModal(habit.id)}
             onRename={(newTitle) => renameHabit(habit.id, newTitle)}
-            language={language}
           />
         ))}
 
@@ -289,16 +279,16 @@ export default function Page() {
           onClick={openModal}
           onMouseEnter={playHoverSound}
         >
-          <Plus className="mr-3 h-8 w-8" /> {t.createButton}
+          <Plus className="mr-3 h-8 w-8" /> Create
         </Button>
 
         {/* Additional Information */}
         <div className="text-center space-y-2 text-gray-400">
           <p>
-            {t.additionalInfo.madeWithLove} <a href="https://linktr.ee/andrewmos" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">Andres Mosquera</a>
+            Made with ❤️ by <a href="https://linktr.ee/andrewmos" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">Andres Mosquera</a>
           </p>
           <p>
-            <a href="https://github.com/andresmosqueraw/habitfast-web" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">{t.additionalInfo.openSource}</a>
+            <a href="https://github.com/andresmosqueraw/habitfast-web" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">HabitFast is Open Source</a>
           </p>
         </div>
 
@@ -317,13 +307,13 @@ export default function Page() {
       {showNotificationPrompt && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
           <div className="bg-gray-800 p-6 rounded-xl w-80 shadow-2xl">
-            <h2 className="text-xl font-semibold text-white mb-4">{t.notifications.enablePromptTitle}</h2>
-            <p className="text-gray-300 mb-4">{t.notifications.enablePromptText}</p>
+            <h2 className="text-xl font-semibold text-white mb-4">Enable Notifications</h2>
+            <p className="text-gray-300 mb-4">Stay on track with your habits by enabling notifications.</p>
             <button
               onClick={requestNotificationPermission}
               className="w-full px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-400 transition-colors"
             >
-              {t.notifications.enableButton}
+              Enable Notifications
             </button>
           </div>
         </div>
@@ -333,26 +323,26 @@ export default function Page() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
           <div className="bg-gray-800 p-6 rounded-xl w-80 shadow-2xl">
-            <h2 className="text-xl font-semibold text-white mb-4">{t.newHabitTitle}</h2>
+            <h2 className="text-xl font-semibold text-white mb-4">New Habit</h2>
             <input
               type="text"
               value={newHabitTitle}
               onChange={(e) => setNewHabitTitle(e.target.value)}
               className="w-full p-3 rounded-md border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder={t.habitNamePlaceholder}
+              placeholder="Enter habit name"
             />
             <div className="flex justify-between gap-4 mt-4">
               <button
                 onClick={closeModal}
                 className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 transition-colors"
               >
-                {t.cancel}
+                Cancel
               </button>
               <button
                 onClick={addHabit}
                 className="px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-400 transition-colors"
               >
-                {t.create}
+                Create
               </button>
             </div>
           </div>
@@ -363,20 +353,20 @@ export default function Page() {
       {isConfirmDeleteOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
           <div className="bg-gray-800 p-6 rounded-xl w-80 shadow-2xl">
-            <h2 className="text-xl font-semibold text-white mb-4">{t.deleteConfirmTitle}</h2>
-            <p className="text-gray-300">{t.deleteConfirmText}</p>
+            <h2 className="text-xl font-semibold text-white mb-4">Are you sure?</h2>
+            <p className="text-gray-300">You are about to delete this habit. Do you want to continue?</p>
             <div className="flex justify-between gap-4 mt-4">
               <button
                 onClick={closeDeleteModal}
                 className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 transition-colors"
               >
-                {t.cancel}
+                Cancel
               </button>
               <button
                 onClick={confirmDeleteHabit}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-500 transition-colors"
               >
-                {t.delete}
+                Delete
               </button>
             </div>
           </div>
