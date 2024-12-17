@@ -6,7 +6,6 @@ import { Plus } from 'lucide-react'
 import { useState, useEffect, useRef } from "react"
 import { supabase } from '../lib/supabase'
 import { User } from '@supabase/supabase-js'
-import { Globe } from 'lucide-react'
 
 interface Habit {
   id: number;
@@ -15,7 +14,12 @@ interface Habit {
 }
 
 export default function Page() {
-  const [habits, setHabits] = useState<Habit[]>([])
+  const defaultHabits = [
+    { id: 1, title: "exercise", marked_days: [] },
+    { id: 2, title: "read", marked_days: [] }
+  ];
+
+  const [habits, setHabits] = useState<Habit[]>(defaultHabits)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false)
   const [habitToDelete, setHabitToDelete] = useState<number | null>(null)
@@ -49,6 +53,8 @@ export default function Page() {
       setUser(currentUser ?? null);
       if (currentUser) {
         loadHabits(currentUser.id);
+      } else {
+        setHabits(defaultHabits);
       }
     });
 
@@ -58,7 +64,7 @@ export default function Page() {
       if (currentUser) {
         loadHabits(currentUser.id);
       } else {
-        setHabits([]);
+        setHabits(defaultHabits);
       }
     });
 
@@ -218,6 +224,7 @@ export default function Page() {
 
   const playHoverSound = () => {
     if (hoverSoundRef.current) {
+      hoverSoundRef.current.volume = 0.2
       hoverSoundRef.current.currentTime = 0;
       hoverSoundRef.current.play();
     }
@@ -225,42 +232,44 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-1">
-      <div className="max-w-6xl mx-auto space-y-2">
-        {/* Header con Login y Language Selector */}
-        <div className="relative flex flex-col items-center pt-4 space-y-2">
-          {/* Language Selector */}
-          {/* <button
-            className="flex items-center space-x-2 text-white text-sm bg-gray-800 bg-opacity-50 px-4 py-1 rounded-lg hover:bg-gray-700 transition-colors"
-            onClick={toggleLanguage}
-          >
-            <Globe className="w-4 h-4" />
-            <span>{language.toUpperCase()}</span>
-          </button> */}
-
-          {/* Login Button */}
+      <nav className="bg-gray-800 bg-opacity-50 p-4 flex justify-between items-center">
+        <div className="flex items-center space-x-4">
+          <img src="/images/logo-b-blue.svg" alt="Logo" className="h-12 w-12" />
+          <h1 className="text-2xl font-bold text-white">HabitFast</h1>
+        </div>
+        <div className="flex items-center space-x-4">
           {!user && (
             <button
-              className="text-white text-lg font-medium bg-gray-800 bg-opacity-50 px-8 py-3 rounded-lg hover:bg-gray-700 transition-colors shadow-lg hover:scale-105 transform duration-200"
+              className="text-white text-lg font-medium bg-gray-800 bg-opacity-50 px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
               onClick={handleLogin}
             >
-              Sign in or Register to save your progress
+              Sign in
             </button>
           )}
+          <Button 
+            className="bg-gray-800 bg-opacity-50 rounded-lg p-2 text-white hover:bg-gray-700 transition-colors"
+            onClick={openModal}
+            onMouseEnter={playHoverSound}
+          >
+            <Plus className="mr-2 h-5 w-5" /> Create Habit
+          </Button>
         </div>
+      </nav>
 
-        {/* Title and Description */}
-        <div className="text-center space-y-1">
-          <h1 className="text-5xl pt-1 font-bold text-white tracking-tight flex items-center justify-center">
-            <img 
-              src="/images/logo-b-blue.svg" 
-              alt="Logo" 
-              className="h-12 w-12"
-            />
-            HabitFast
-          </h1>
-          <p className="text-xl text-gray-300">We are what we repeatedly do. Excellence, then, is not an act, but a habit ~ Aristotle</p>
-        </div>
+      <div className="flex justify-center mt-4">
+        <Button 
+          className="bg-emerald-500 rounded-full p-2 text-white hover:bg-emerald-400 transition-colors"
+          onClick={() => alert('Add Category')}
+        >
+          <Plus className="h-5 w-5" />
+        </Button>
+      </div>
 
+      <div className="text-center text-gray-300 mt-4">
+        <p>We are what we repeatedly do. Excellence, then is not an act but a habit. ~Will Durant</p>
+      </div>
+
+      <div className="max-w-6xl mx-auto space-y-2 mt-4">
         {/* Habit Trackers */}
         {habits.map(habit => (
           <HabitTracker
@@ -272,15 +281,6 @@ export default function Page() {
             onRename={(newTitle) => renameHabit(habit.id, newTitle)}
           />
         ))}
-
-        {/* Create New Habit Button */}
-        <Button 
-          className="w-full bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-3xl p-10 shadow-2xl text-white text-2xl font-semibold hover:bg-gray-700 transition-colors duration-300 hover:scale-[1.02] transform mb-12"
-          onClick={openModal}
-          onMouseEnter={playHoverSound}
-        >
-          <Plus className="mr-3 h-8 w-8" /> Create
-        </Button>
 
         {/* Additional Information */}
         <div className="text-center space-y-2 text-gray-400">
