@@ -2,8 +2,8 @@
 
 import HabitTracker from '../components/habit-tracker'
 import { Button } from "../components/ui/button"
-import { Plus } from 'lucide-react'
-import { useState, useEffect, useRef } from "react"
+import { Plus, X } from 'lucide-react'
+import { useState, useEffect, useRef, useMemo } from "react"
 import { supabase } from '../lib/supabase'
 import { User } from '@supabase/supabase-js'
 import Image from 'next/image';
@@ -15,10 +15,10 @@ interface Habit {
 }
 
 export default function Page() {
-  const defaultHabits = [
+  const defaultHabits = useMemo(() => [
     { id: 1, title: "exercise", marked_days: [] },
     { id: 2, title: "read", marked_days: [] }
-  ];
+  ], []);
 
   const [habits, setHabits] = useState<Habit[]>(defaultHabits)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -29,6 +29,13 @@ export default function Page() {
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false)
   const [errorLog, setErrorLog] = useState<string | null>(null)
   const hoverSoundRef = useRef<HTMLAudioElement | null>(null)
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+  const [showUndo, setShowUndo] = useState(false);
+  const [lastDeletedCategory, setLastDeletedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     const loadHabits = async (userId: string) => {
@@ -231,6 +238,48 @@ export default function Page() {
     }
   }
 
+  const openCategoryModal = () => setIsCategoryModalOpen(true);
+  const closeCategoryModal = () => setIsCategoryModalOpen(false);
+
+  const addCategory = () => {
+    if (!newCategoryName.trim()) return;
+    setCategories([...categories, newCategoryName.trim()]);
+    setNewCategoryName("");
+    closeCategoryModal();
+  };
+
+  const toggleCategorySelection = (category: string) => {
+    setSelectedCategory((prev) => (prev === category ? null : category));
+  };
+
+  const confirmDeleteCategory = (category: string) => {
+    setCategoryToDelete(category);
+  };
+
+  const deleteCategory = () => {
+    if (categoryToDelete) {
+      setCategories(categories.filter(category => category !== categoryToDelete));
+      if (selectedCategory === categoryToDelete) {
+        setSelectedCategory(null);
+      }
+      setLastDeletedCategory(categoryToDelete);
+      setShowUndo(true);
+      setCategoryToDelete(null);
+
+      setTimeout(() => {
+        setShowUndo(false);
+      }, 3000);
+    }
+  };
+
+  const undoDelete = () => {
+    if (lastDeletedCategory) {
+      setCategories([...categories, lastDeletedCategory]);
+      setShowUndo(false);
+      setLastDeletedCategory(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-1">
       <nav className="bg-gray-800 bg-opacity-50 p-4 flex justify-between items-center">
@@ -259,11 +308,33 @@ export default function Page() {
 
       <div className="flex justify-center mt-4">
         <Button 
-          className="bg-emerald-500 rounded-full p-2 text-white hover:bg-emerald-400 transition-colors"
-          onClick={() => alert('Add Category')}
+          className="bg-emerald-500 rounded-full p-2 text-white hover:bg-emerald-400 transition-colors h-12 w-12 flex items-center justify-center"
+          onClick={openCategoryModal}
         >
           <Plus className="h-5 w-5" />
         </Button>
+        <div className="ml-4 flex flex-wrap gap-2">
+          {categories.map((category, index) => (
+            <div key={index} className="flex items-center">
+              <span
+                onClick={() => toggleCategorySelection(category)}
+                className={`cursor-pointer px-3 py-1 rounded-full flex items-center justify-center ${
+                  selectedCategory === category
+                    ? "bg-emerald-500 text-white"
+                    : "bg-gray-700 text-white"
+                }`}
+              >
+                {category}
+              </span>
+              <button
+                onClick={() => confirmDeleteCategory(category)}
+                className="ml-2 text-red-500 hover:text-red-700"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="text-center text-gray-300 mt-4">
@@ -286,7 +357,7 @@ export default function Page() {
         {/* Additional Information */}
         <div className="text-center space-y-2 text-gray-400">
           <p>
-            Made with ❤️ by <a href="https://linktr.ee/andrewmos" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">Andres Mosquera</a>
+            Made with ☕ and ❤️ by <a href="https://linktr.ee/andrewmos" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">Andres Mosquera</a>
           </p>
           <p>
             <a href="https://github.com/andresmosqueraw/habitfast-web" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">HabitFast is Open Source</a>
@@ -368,6 +439,73 @@ export default function Page() {
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-500 transition-colors"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Undo Notification */}
+      {showUndo && (
+        <div className="fixed bottom-4 right-4 bg-gray-800 text-white p-4 rounded-md shadow-lg">
+          <span>Category deleted.</span>
+          <button
+            onClick={undoDelete}
+            className="ml-2 text-emerald-500 hover:underline"
+          >
+            Undo
+          </button>
+        </div>
+      )}
+
+      {/* Confirmation Modal for Category Deletion */}
+      {categoryToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+          <div className="bg-gray-800 p-6 rounded-xl w-80 shadow-2xl">
+            <h2 className="text-xl font-semibold text-white mb-4">Are you sure?</h2>
+            <p className="text-gray-300">You are about to delete this category. Do you want to continue?</p>
+            <div className="flex justify-between gap-4 mt-4">
+              <button
+                onClick={() => setCategoryToDelete(null)}
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteCategory}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-500 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Category Modal */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+          <div className="bg-gray-800 p-6 rounded-xl w-80 shadow-2xl">
+            <h2 className="text-xl font-semibold text-white mb-4">New Category</h2>
+            <input
+              type="text"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              className="w-full p-3 rounded-md border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Enter category name"
+            />
+            <div className="flex justify-between gap-4 mt-4">
+              <button
+                onClick={closeCategoryModal}
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addCategory}
+                className="px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-400 transition-colors"
+              >
+                Add
               </button>
             </div>
           </div>
