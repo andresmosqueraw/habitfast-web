@@ -174,9 +174,6 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
 
   const handleMouseEnter = () => setIsHovered(true)
   const handleMouseLeave = () => setIsHovered(false)
-  const handleBlur = () => {
-    onRename(currentTitle.trim())
-  }
 
   const playHoverSound = () => {
     if (hoverSoundRef.current) {
