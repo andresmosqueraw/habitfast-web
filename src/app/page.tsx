@@ -29,13 +29,13 @@ export default function Page() {
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false)
   const [errorLog, setErrorLog] = useState<string | null>(null)
   const hoverSoundRef = useRef<HTMLAudioElement | null>(null)
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<{ id: number; name: string } | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [showUndo, setShowUndo] = useState(false);
-  const [lastDeletedCategory, setLastDeletedCategory] = useState<string | null>(null);
+  const [lastDeletedCategory, setLastDeletedCategory] = useState<{ id: number; name: string } | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
   const loadHabits = async (userId: string, categoryId: number | null = null) => {
@@ -177,24 +177,30 @@ export default function Page() {
 
   const addHabit = async () => {
     if (!newHabitTitle.trim()) return;
-
+  
+    // Validar si `selectedCategoryId` existe en las categorías
+    const categoryExists = categories.some(category => category.id === selectedCategoryId);
+  
+    if (selectedCategoryId && !categoryExists) {
+      setErrorLog("The selected category does not exist.");
+      return;
+    }
+  
     const newHabit = {
       id: Date.now(),
       title: newHabitTitle,
       user_id: user?.id || null,
-      category_id: selectedCategoryId,
+      category_id: selectedCategoryId || null,
       marked_days: []
     };
-
+  
     try {
       if (user) {
-        const { error } = await supabase
-          .from('habits')
-          .insert(newHabit);
-
+        const { error } = await supabase.from('habits').insert(newHabit);
+  
         if (error) throw error;
       }
-
+  
       setHabits(prevHabits => [...prevHabits, newHabit]);
       setNewHabitTitle("");
       setIsModalOpen(false);
@@ -203,7 +209,7 @@ export default function Page() {
       console.error('Error adding habit:', err);
       setErrorLog(`Error adding habit: ${err.message}`);
     }
-  };
+  };  
 
   const openModal = () => setIsModalOpen(true)
   const closeModal = () => setIsModalOpen(false)
@@ -251,17 +257,22 @@ export default function Page() {
 
   const addCategory = async () => {
     if (!newCategoryName.trim()) return;
-
+  
     try {
       if (user) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('categories')
-          .insert({ name: newCategoryName.trim(), user_id: user.id });
-
+          .insert({ name: newCategoryName.trim(), user_id: user.id })
+          .select(); // Devuelve la categoría recién creada
+  
         if (error) throw error;
+  
+        // Usa la categoría devuelta para establecer el ID
+        if (data) {
+          setCategories([...categories, ...data]);
+        }
       }
-
-      setCategories([...categories, newCategoryName.trim()]);
+  
       setNewCategoryName("");
       closeCategoryModal();
     } catch (error) {
@@ -269,31 +280,47 @@ export default function Page() {
       console.error('Error adding category:', err);
       setErrorLog(`Error adding category: ${err.message}`);
     }
-  };
+  };  
 
-  const toggleCategorySelection = (category: string, categoryId: number) => {
-    setSelectedCategory((prev) => (prev === category ? null : category));
+  const toggleCategorySelection = (category: { id: number; name: string }, categoryId: number) => {
+    setSelectedCategory((prev) => (prev?.id === categoryId ? null : category));
     setSelectedCategoryId((prev) => (prev === categoryId ? null : categoryId));
     loadHabits(user?.id || '', categoryId);
   };
 
-  const confirmDeleteCategory = (category: string) => {
-    setCategoryToDelete(category);
+  const confirmDeleteCategory = (category: { id: number; name: string }) => {
+    setCategoryToDelete(category.name);
   };
 
-  const deleteCategory = () => {
+  const deleteCategory = async () => {
     if (categoryToDelete) {
-      setCategories(categories.filter(category => category !== categoryToDelete));
-      if (selectedCategory === categoryToDelete) {
-        setSelectedCategory(null);
-      }
-      setLastDeletedCategory(categoryToDelete);
-      setShowUndo(true);
-      setCategoryToDelete(null);
+      try {
+        if (user) {
+          const { error } = await supabase
+            .from('categories')
+            .delete()
+            .eq('name', categoryToDelete)
+            .eq('user_id', user.id);
 
-      setTimeout(() => {
-        setShowUndo(false);
-      }, 3000);
+          if (error) throw error;
+        }
+
+        setCategories(categories.filter(category => category.name !== categoryToDelete));
+        if (selectedCategory?.name === categoryToDelete) {
+          setSelectedCategory(null);
+        }
+        setLastDeletedCategory(categories.find(category => category.name === categoryToDelete) || null);
+        setShowUndo(true);
+        setCategoryToDelete(null);
+
+        setTimeout(() => {
+          setShowUndo(false);
+        }, 3000);
+      } catch (error) {
+        const err = error as Error;
+        console.error('Error deleting category:', err);
+        setErrorLog(`Error deleting category: ${err.message}`);
+      }
     }
   };
 
@@ -316,7 +343,7 @@ export default function Page() {
 
         if (error) throw error;
 
-        setCategories(data.map((category) => category.name) || []);
+        setCategories(data.map((category) => ({ id: category.id, name: category.name })) || []);
       } catch (error) {
         const err = error as Error;
         console.error('Error loading categories:', err);
@@ -367,14 +394,14 @@ export default function Page() {
           {categories.map((category, index) => (
             <div key={index} className="flex items-center">
               <span
-                onClick={() => toggleCategorySelection(category, index + 1)}
+                onClick={() => toggleCategorySelection(category, category.id)}
                 className={`cursor-pointer px-3 py-1 rounded-full flex items-center justify-center ${
-                  selectedCategory === category
+                  selectedCategory?.name === category.name
                     ? "bg-emerald-500 text-white"
                     : "bg-gray-700 text-white"
                 }`}
               >
-                {category}
+                {category.name}
               </span>
               <button
                 onClick={() => confirmDeleteCategory(category)}
@@ -453,6 +480,22 @@ export default function Page() {
               className="w-full p-3 rounded-md border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               placeholder="Enter habit name"
             />
+            <select
+              value={selectedCategoryId || ''}
+              onChange={(e) => {
+                const selectedId = Number(e.target.value) || null;
+                setSelectedCategoryId(selectedId);
+                console.log('Selected Category ID:', selectedId);
+              }}
+              className="w-full p-3 rounded-md border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 mt-2"
+            >
+              <option value="">Select Category</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
             <div className="flex justify-between gap-4 mt-4">
               <button
                 onClick={closeModal}
