@@ -178,12 +178,6 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
     onRename(currentTitle.trim())
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleBlur()
-    }
-  }
-
   const playHoverSound = () => {
     if (hoverSoundRef.current) {
       hoverSoundRef.current.volume = 0.2
