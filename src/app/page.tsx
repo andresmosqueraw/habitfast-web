@@ -283,9 +283,14 @@ export default function Page() {
   };  
 
   const toggleCategorySelection = (category: { id: number; name: string }, categoryId: number) => {
-    setSelectedCategory((prev) => (prev?.id === categoryId ? null : category));
-    setSelectedCategoryId((prev) => (prev === categoryId ? null : categoryId));
-    loadHabits(user?.id || '', categoryId);
+    const newSelectedCategory = selectedCategory?.id === categoryId ? null : category;
+    const newSelectedCategoryId = selectedCategoryId === categoryId ? null : categoryId;
+
+    setSelectedCategory(newSelectedCategory);
+    setSelectedCategoryId(newSelectedCategoryId);
+
+    // Cargar todos los hábitos si no hay categoría seleccionada
+    loadHabits(user?.id || '', newSelectedCategoryId);
   };
 
   const confirmDeleteCategory = (category: { id: number; name: string }) => {
