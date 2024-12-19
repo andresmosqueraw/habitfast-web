@@ -36,26 +36,33 @@ export default function Page() {
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [showUndo, setShowUndo] = useState(false);
   const [lastDeletedCategory, setLastDeletedCategory] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+
+  const loadHabits = async (userId: string, categoryId: number | null = null) => {
+    try {
+      let query = supabase
+        .from('habits')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true });
+
+      if (categoryId !== null) {
+        query = query.eq('category_id', categoryId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      setHabits(data || []);
+    } catch (error) {
+      const err = error as Error;
+      console.error('Error loading habits:', err);
+      setErrorLog(`Error loading habits: ${err.message}`);
+    }
+  };
 
   useEffect(() => {
-    const loadHabits = async (userId: string) => {
-      try {
-        const { data, error } = await supabase
-          .from('habits')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: true });
-
-        if (error) throw error;
-
-        setHabits(data || []);
-      } catch (error) {
-        const err = error as Error;
-        console.error('Error loading habits:', err);
-        setErrorLog(`Error loading habits: ${err.message}`);
-      }
-    };
-
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user;
       setUser(currentUser ?? null);
@@ -169,33 +176,34 @@ export default function Page() {
   }
 
   const addHabit = async () => {
-    if (!newHabitTitle.trim()) return
+    if (!newHabitTitle.trim()) return;
 
     const newHabit = {
       id: Date.now(),
       title: newHabitTitle,
       user_id: user?.id || null,
+      category_id: selectedCategoryId,
       marked_days: []
-    }
+    };
 
     try {
       if (user) {
         const { error } = await supabase
           .from('habits')
-          .insert(newHabit)
+          .insert(newHabit);
 
         if (error) throw error;
       }
 
-      setHabits(prevHabits => [...prevHabits, newHabit])
-      setNewHabitTitle("")
-      setIsModalOpen(false)
+      setHabits(prevHabits => [...prevHabits, newHabit]);
+      setNewHabitTitle("");
+      setIsModalOpen(false);
     } catch (error) {
       const err = error as Error;
       console.error('Error adding habit:', err);
       setErrorLog(`Error adding habit: ${err.message}`);
     }
-  }
+  };
 
   const openModal = () => setIsModalOpen(true)
   const closeModal = () => setIsModalOpen(false)
@@ -241,15 +249,32 @@ export default function Page() {
   const openCategoryModal = () => setIsCategoryModalOpen(true);
   const closeCategoryModal = () => setIsCategoryModalOpen(false);
 
-  const addCategory = () => {
+  const addCategory = async () => {
     if (!newCategoryName.trim()) return;
-    setCategories([...categories, newCategoryName.trim()]);
-    setNewCategoryName("");
-    closeCategoryModal();
+
+    try {
+      if (user) {
+        const { error } = await supabase
+          .from('categories')
+          .insert({ name: newCategoryName.trim(), user_id: user.id });
+
+        if (error) throw error;
+      }
+
+      setCategories([...categories, newCategoryName.trim()]);
+      setNewCategoryName("");
+      closeCategoryModal();
+    } catch (error) {
+      const err = error as Error;
+      console.error('Error adding category:', err);
+      setErrorLog(`Error adding category: ${err.message}`);
+    }
   };
 
-  const toggleCategorySelection = (category: string) => {
+  const toggleCategorySelection = (category: string, categoryId: number) => {
     setSelectedCategory((prev) => (prev === category ? null : category));
+    setSelectedCategoryId((prev) => (prev === categoryId ? null : categoryId));
+    loadHabits(user?.id || '', categoryId);
   };
 
   const confirmDeleteCategory = (category: string) => {
@@ -279,6 +304,30 @@ export default function Page() {
       setLastDeletedCategory(null);
     }
   };
+
+  useEffect(() => {
+    const loadCategories = async (userId: string) => {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        setCategories(data.map((category) => category.name) || []);
+      } catch (error) {
+        const err = error as Error;
+        console.error('Error loading categories:', err);
+        setErrorLog(`Error loading categories: ${err.message}`);
+      }
+    };
+
+    if (user) {
+      loadCategories(user.id);
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-1">
@@ -318,7 +367,7 @@ export default function Page() {
           {categories.map((category, index) => (
             <div key={index} className="flex items-center">
               <span
-                onClick={() => toggleCategorySelection(category)}
+                onClick={() => toggleCategorySelection(category, index + 1)}
                 className={`cursor-pointer px-3 py-1 rounded-full flex items-center justify-center ${
                   selectedCategory === category
                     ? "bg-emerald-500 text-white"
