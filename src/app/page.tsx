@@ -302,6 +302,19 @@ export default function Page() {
     if (categoryToDelete) {
       try {
         if (user) {
+          // Desvincular hábitos de la categoría
+          const categoryId = categories.find(cat => cat.name === categoryToDelete)?.id;
+          if (categoryId) {
+            const { error: habitError } = await supabase
+              .from('habits')
+              .update({ category_id: null })
+              .eq('category_id', categoryId)
+              .eq('user_id', user.id);
+
+            if (habitError) throw habitError;
+          }
+
+          // Eliminar la categoría
           const { error } = await supabase
             .from('categories')
             .delete()
@@ -309,19 +322,19 @@ export default function Page() {
             .eq('user_id', user.id);
 
           if (error) throw error;
-        }
 
-        setCategories(categories.filter(category => category.name !== categoryToDelete));
-        if (selectedCategory?.name === categoryToDelete) {
-          setSelectedCategory(null);
-        }
-        setLastDeletedCategory(categories.find(category => category.name === categoryToDelete) || null);
-        setShowUndo(true);
-        setCategoryToDelete(null);
+          setCategories(categories.filter(category => category.name !== categoryToDelete));
+          if (selectedCategory?.name === categoryToDelete) {
+            setSelectedCategory(null);
+          }
+          setLastDeletedCategory(categories.find(category => category.name === categoryToDelete) || null);
+          setShowUndo(true);
+          setCategoryToDelete(null);
 
-        setTimeout(() => {
-          setShowUndo(false);
-        }, 3000);
+          setTimeout(() => {
+            setShowUndo(false);
+          }, 3000);
+        }
       } catch (error) {
         const err = error as Error;
         console.error('Error deleting category:', err);
