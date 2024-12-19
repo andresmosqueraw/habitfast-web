@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from "react"
-import { Check, Trash2, Flame } from 'lucide-react'
+import { Check, Trash2, Flame, Edit } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { supabase } from '../lib/supabase'
 import { User } from '@supabase/supabase-js'
@@ -105,6 +105,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   const confettiSound = useRef<HTMLAudioElement | null>(null)
   const [streak, setStreak] = useState(0)
   const hoverSoundRef = useRef<HTMLAudioElement | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -200,27 +201,9 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
       <div className="flex justify-between items-center pb-3">
         {/* Contenedor del título */}
         <div className="flex-1 min-w-0 mr-6">
-          <input
-            type="text"
-            value={currentTitle}
-            onChange={(e) => setCurrentTitle(e.target.value)}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            onClick={(e) => {
-              const input = e.target as HTMLInputElement;
-              const clickPosition = e.clientX - input.getBoundingClientRect().left;
-              if (clickPosition < 10) {
-                input.setSelectionRange(0, 0);
-              } else {
-                input.setSelectionRange(
-                  input.selectionStart,
-                  input.selectionStart
-                );
-              }
-            }}
-            className="text-xl font-semibold text-white bg-transparent focus:outline-none w-full truncate cursor-pointer"
-            style={{ lineHeight: '1.5', padding: '4px 0' }}
-          />
+          <span className="text-xl font-semibold text-white bg-transparent w-full truncate cursor-pointer">
+            {currentTitle}
+          </span>
         </div>
 
         {/* Contenedor de racha y botones */}
@@ -259,6 +242,14 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
           >
             <Check className={`w-5 h-5 ${markedDays.includes(today) ? 'text-white' : 'text-emerald-400'}`} />
           </button>
+
+          {/* Botón de editar */}
+          <button 
+            className="p-3 rounded-full transition-transform transform hover:scale-105 bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
+            onClick={() => setIsEditModalOpen(true)}
+          >
+            <Edit className="w-5 h-5 text-white" />
+          </button>
         </div>
       </div>
 
@@ -295,6 +286,35 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
           ))}
         </div>
       </div>
+
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+          <div className="bg-gray-800 p-6 rounded-xl w-80 shadow-2xl">
+            <h2 className="text-xl font-semibold text-white mb-4">Edit Habit</h2>
+            <input
+              type="text"
+              value={currentTitle}
+              onChange={(e) => setCurrentTitle(e.target.value)}
+              className="w-full p-3 rounded-md border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Enter new habit name"
+            />
+            <div className="flex justify-between gap-4 mt-4">
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { handleBlur(); setIsEditModalOpen(false); }}
+                className="px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-400 transition-colors"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

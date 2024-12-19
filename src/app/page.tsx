@@ -303,16 +303,17 @@ export default function Page() {
           >
             <Plus className="mr-2 h-5 w-5" /> Create Habit
           </Button>
+          <Button 
+            className="bg-gray-800 bg-opacity-50 rounded-lg p-2 text-white hover:bg-gray-700 transition-colors"
+            onClick={openCategoryModal}
+            onMouseEnter={playHoverSound}
+          >
+            <Plus className="mr-2 h-5 w-5" /> Agregar Categoría
+          </Button>
         </div>
       </nav>
 
       <div className="flex justify-center mt-4">
-        <Button 
-          className="bg-emerald-500 rounded-full p-2 text-white hover:bg-emerald-400 transition-colors h-12 w-12 flex items-center justify-center"
-          onClick={openCategoryModal}
-        >
-          <Plus className="h-5 w-5" />
-        </Button>
         <div className="ml-4 flex flex-wrap gap-2">
           {categories.map((category, index) => (
             <div key={index} className="flex items-center">
