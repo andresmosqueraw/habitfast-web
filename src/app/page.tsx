@@ -12,6 +12,7 @@ interface Habit {
   id: number;
   title: string;
   marked_days?: string[];
+  category_id?: number | null;
 }
 
 export default function Page() {
@@ -431,6 +432,8 @@ export default function Page() {
             id={habit.id}
             title={habit.title}
             initialMarkedDays={habit.marked_days || []}
+            initialCategoryId={habit.category_id || null}
+            categories={categories}
             onRemove={() => openDeleteModal(habit.id)}
             onRename={(newTitle) => renameHabit(habit.id, newTitle)}
           />

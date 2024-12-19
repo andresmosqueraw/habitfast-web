@@ -12,6 +12,8 @@ interface HabitTrackerProps {
   onRemove: () => void;
   onRename: (newTitle: string) => void;
   initialMarkedDays?: string[];
+  initialCategoryId?: number | null;
+  categories: { id: number; name: string }[];
 }
 
 function formatDateForDB(date: Date): string {
@@ -89,7 +91,7 @@ function calculateStreak(markedDays: string[]): number {
   return streak
 }
 
-export default function HabitTracker({ id, title, onRemove, onRename, initialMarkedDays = [] }: HabitTrackerProps) {
+export default function HabitTracker({ id, title, onRemove, onRename, initialMarkedDays = [], initialCategoryId = null, categories }: HabitTrackerProps) {
   const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const ROWS = 7 // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -106,6 +108,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   const [streak, setStreak] = useState(0)
   const hoverSoundRef = useRef<HTMLAudioElement | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentCategoryId, setCurrentCategoryId] = useState<number | null>(initialCategoryId);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -186,6 +189,25 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
       hoverSoundRef.current.volume = 0.2
       hoverSoundRef.current.currentTime = 0;
       hoverSoundRef.current.play();
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('habits')
+        .update({ title: currentTitle.trim(), category_id: currentCategoryId })
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      onRename(currentTitle.trim());
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error('Error updating habit:', error);
     }
   };
 
@@ -298,6 +320,22 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
               className="w-full p-3 rounded-md border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               placeholder="Enter new habit name"
             />
+            <select
+              value={currentCategoryId || ''}
+              onChange={(e) => {
+                const selectedId = Number(e.target.value) || null;
+                setCurrentCategoryId(selectedId);
+                console.log('Selected Category ID:', selectedId);
+              }}
+              className="w-full p-3 rounded-md border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 mt-2"
+            >
+              <option value="">Select Category</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
             <div className="flex justify-between gap-4 mt-4">
               <button
                 onClick={() => setIsEditModalOpen(false)}
@@ -306,7 +344,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
                 Cancel
               </button>
               <button
-                onClick={() => { handleBlur(); setIsEditModalOpen(false); }}
+                onClick={handleSave}
                 className="px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-400 transition-colors"
               >
                 Save
