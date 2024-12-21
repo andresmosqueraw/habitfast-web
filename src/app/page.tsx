@@ -15,6 +15,18 @@ interface Habit {
   category_id?: number | null;
 }
 
+async function retryRequest(fn: () => Promise<any>, retries = 3, delay = 1000) {
+  try {
+    return await fn();
+  } catch (error: any) {
+    if (retries > 0 && error.status === 429) {
+      await new Promise(res => setTimeout(res, delay));
+      return retryRequest(fn, retries - 1, delay * 2);
+    }
+    throw error;
+  }
+}
+
 export default function Page() {
   const defaultHabits = useMemo(() => [
     { id: 1, title: "exercise", marked_days: [] },
@@ -43,25 +55,29 @@ export default function Page() {
     try {
       let query = supabase
         .from('habits')
-        .select('*')
+        .select('*, categories(name)')
         .eq('user_id', userId)
         .order('created_at', { ascending: true });
-
+  
       if (categoryId !== null) {
         query = query.eq('category_id', categoryId);
       }
-
+  
       const { data, error } = await query;
-
+  
       if (error) throw error;
-
+  
       setHabits(data || []);
     } catch (error) {
-      const err = error as Error;
-      console.error('Error loading habits:', err);
-      setErrorLog(`Error loading habits: ${err.message}`);
+      if (error instanceof Error) {
+        console.error('Error loading habits:', error);
+        setErrorLog(`Error loading habits: ${error.message}`);
+      } else {
+        console.error('Error loading habits:', error);
+        setErrorLog('Error loading habits: An unknown error occurred.');
+      }
     }
-  };
+  };  
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {

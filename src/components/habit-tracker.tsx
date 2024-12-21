@@ -91,6 +91,18 @@ function calculateStreak(markedDays: string[]): number {
   return streak
 }
 
+async function retryRequest(fn: () => Promise<any>, retries = 3, delay = 1000) {
+  try {
+    return await fn();
+  } catch (error: any) {
+    if (retries > 0 && error.status === 429) {
+      await new Promise(res => setTimeout(res, delay));
+      return retryRequest(fn, retries - 1, delay * 2);
+    }
+    throw error;
+  }
+}
+
 export default function HabitTracker({ id, title, onRemove, onRename, initialMarkedDays = [], initialCategoryId = null, categories }: HabitTrackerProps) {
   const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -111,7 +123,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   const [currentCategoryId, setCurrentCategoryId] = useState<number | null>(initialCategoryId);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    retryRequest(() => supabase.auth.getSession()).then(({ data: { session } }) => {
       setUser(session?.user ?? null)
     })
 
