@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from "react"
-import { Check, Trash2, Flame, Edit } from 'lucide-react'
+import { Check, Flame, Edit } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { supabase } from '../lib/supabase'
 import { User } from '@supabase/supabase-js'
@@ -110,7 +110,6 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
 
   const [markedDays, setMarkedDays] = useState<string[]>(initialMarkedDays)
   const [user, setUser] = useState<User | null>(null)
-  const [isHovered, setIsHovered] = useState(false)
   const [currentTitle, setCurrentTitle] = useState(title)
   const dates = generateDates(MONTHS, DAYS_OF_WEEK)
   const today = formatDateForDB(new Date())
@@ -184,9 +183,6 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
     })
   }
 
-  const handleMouseEnter = () => setIsHovered(true)
-  const handleMouseLeave = () => setIsHovered(false)
-
   const playHoverSound = () => {
     if (hoverSoundRef.current) {
       hoverSoundRef.current.volume = 0.2
@@ -217,8 +213,6 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   return (
     <div 
       className="bg-gray-800 bg-opacity-50 backdrop-blur-lg rounded-xl p-4 shadow-lg"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
       <audio ref={confettiSound} src="/sounds/cheer-short.mp3" />
       <audio ref={hoverSoundRef} src="/sounds/hover-sound-effect.mp3" />

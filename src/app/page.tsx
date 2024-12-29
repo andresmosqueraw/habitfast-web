@@ -15,15 +15,15 @@ interface Habit {
   category_id?: number | null;
 }
 
-async function retryRequest(fn: () => Promise<any>, retries = 3, delay = 1000) {
+async function someFunction() {
   try {
-    return await fn();
-  } catch (error: any) {
-    if (retries > 0 && error.status === 429) {
-      await new Promise(res => setTimeout(res, delay));
-      return retryRequest(fn, retries - 1, delay * 2);
+    // ... your code ...
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error:', error.message);
+    } else {
+      console.error('An unknown error occurred.');
     }
-    throw error;
   }
 }
 
@@ -49,24 +49,24 @@ export default function Page() {
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [showUndo, setShowUndo] = useState(false);
   const [lastDeletedCategory, setLastDeletedCategory] = useState<{ id: number; name: string } | null>(null);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(-1);
 
-  const loadHabits = async (userId: string, categoryId: number | null = null) => {
+  const loadHabits = async (userId: string, categoryId: number | null = -1) => {
     try {
       let query = supabase
         .from('habits')
         .select('*, categories(name)')
         .eq('user_id', userId)
         .order('created_at', { ascending: true });
-  
-      if (categoryId !== null) {
-        query = query.eq('category_id', categoryId);
+
+      if (categoryId !== -1) {
+        query = categoryId === null ? query.is('category_id', null) : query.eq('category_id', categoryId);
       }
-  
+
       const { data, error } = await query;
-  
+
       if (error) throw error;
-  
+
       setHabits(data || []);
     } catch (error) {
       if (error instanceof Error) {
@@ -77,7 +77,7 @@ export default function Page() {
         setErrorLog('Error loading habits: An unknown error occurred.');
       }
     }
-  };  
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -305,14 +305,8 @@ export default function Page() {
   };  
 
   const toggleCategorySelection = (category: { id: number; name: string }, categoryId: number) => {
-    const newSelectedCategory = selectedCategory?.id === categoryId ? null : category;
     const newSelectedCategoryId = selectedCategoryId === categoryId ? null : categoryId;
-
-    setSelectedCategory(newSelectedCategory);
     setSelectedCategoryId(newSelectedCategoryId);
-
-    // Cargar todos los hábitos si no hay categoría seleccionada
-    loadHabits(user?.id || '', newSelectedCategoryId);
   };
 
   const confirmDeleteCategory = (category: { id: number; name: string }) => {
@@ -396,6 +390,12 @@ export default function Page() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (user) {
+      loadHabits(user.id, selectedCategoryId);
+    }
+  }, [user, selectedCategoryId]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-1">
       <nav className="bg-gray-800 bg-opacity-50 p-4 flex justify-between items-center">
@@ -431,12 +431,36 @@ export default function Page() {
 
       <div className="flex justify-center mt-4">
         <div className="ml-4 flex flex-wrap gap-2">
+          <div className="flex items-center">
+            <span
+              onClick={() => setSelectedCategoryId(-1)}
+              className={`cursor-pointer px-3 py-1 rounded-full flex items-center justify-center ${
+                selectedCategoryId === -1
+                  ? "bg-emerald-500 text-white"
+                  : "bg-gray-700 text-white"
+              }`}
+            >
+              All
+            </span>
+          </div>
+          <div className="flex items-center">
+            <span
+              onClick={() => setSelectedCategoryId(null)}
+              className={`cursor-pointer px-3 py-1 rounded-full flex items-center justify-center ${
+                selectedCategoryId === null
+                  ? "bg-emerald-500 text-white"
+                  : "bg-gray-700 text-white"
+              }`}
+            >
+              No Category
+            </span>
+          </div>
           {categories.map((category, index) => (
             <div key={index} className="flex items-center">
               <span
                 onClick={() => toggleCategorySelection(category, category.id)}
                 className={`cursor-pointer px-3 py-1 rounded-full flex items-center justify-center ${
-                  selectedCategory?.name === category.name
+                  selectedCategoryId === category.id
                     ? "bg-emerald-500 text-white"
                     : "bg-gray-700 text-white"
                 }`}
