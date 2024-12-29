@@ -290,16 +290,14 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
                   <div
                     key={dbDate}
                     onClick={(e) => markDay(dbDate, e.currentTarget)}
-                    className={`
-                      w-3 h-3 cursor-pointer rounded-sm
+                    className={`tooltip w-3 h-3 cursor-pointer rounded-sm
                       ${markedDays.includes(dbDate)
                         ? 'bg-emerald-500 text-white shadow-md' 
                         : 'bg-gray-700 hover:bg-gray-600'
                       }
                     `}
-                    title={tooltipText}
                   >
-                    {/* Removed text elements */}
+                    <span className="tooltiptext">{tooltipText}</span>
                   </div>
                 )
               })}
