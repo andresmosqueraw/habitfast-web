@@ -284,8 +284,7 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
                     key={dbDate}
                     onClick={(e) => markDay(dbDate, e.currentTarget)}
                     className={`
-                      w-4 h-4 rounded-md
-                      transition-colors duration-200 cursor-pointer
+                      w-3 h-3 cursor-pointer rounded-sm
                       ${markedDays.includes(dbDate)
                         ? 'bg-emerald-500 text-white shadow-md' 
                         : 'bg-gray-700 hover:bg-gray-600'
