@@ -15,18 +15,6 @@ interface Habit {
   category_id?: number | null;
 }
 
-async function someFunction() {
-  try {
-    // ... your code ...
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('Error:', error.message);
-    } else {
-      console.error('An unknown error occurred.');
-    }
-  }
-}
-
 export default function Page() {
   const defaultHabits = useMemo(() => [
     { id: 1, title: "exercise", marked_days: [] },

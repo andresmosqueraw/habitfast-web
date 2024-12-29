@@ -94,10 +94,12 @@ function calculateStreak(markedDays: string[]): number {
 async function retryRequest(fn: () => Promise<any>, retries = 3, delay = 1000) {
   try {
     return await fn();
-  } catch (error: any) {
-    if (retries > 0 && error.status === 429) {
-      await new Promise(res => setTimeout(res, delay));
-      return retryRequest(fn, retries - 1, delay * 2);
+  } catch (error: unknown) {
+    if (error instanceof Error && (error as any).status === 429) {
+      if (retries > 0) {
+        await new Promise(res => setTimeout(res, delay));
+        return retryRequest(fn, retries - 1, delay * 2);
+      }
     }
     throw error;
   }
