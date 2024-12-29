@@ -246,16 +246,6 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
             </div>
           )}
 
-          {/* Botón de eliminar - Ahora solo visible en hover */}
-          {isHovered && (
-            <button 
-              className="p-3 rounded-full transition-transform transform hover:scale-105 bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50"
-              onClick={onRemove}
-            >
-              <Trash2 className="w-5 h-5 text-white" />
-            </button>
-          )}
-
           {/* Botón de marcar hábito */}
           <button 
             ref={buttonRef}
@@ -351,6 +341,12 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
                 className="px-4 py-2 bg-emerald-500 text-white rounded-md hover:bg-emerald-400 transition-colors"
               >
                 Save
+              </button>
+              <button 
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-500 transition-colors"
+                onClick={onRemove}
+              >
+                Delete
               </button>
             </div>
           </div>
