@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Check, Flame, Edit } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { supabase } from '../lib/supabase'
-import { User } from '@supabase/supabase-js'
+import { User, AuthError, Session } from '@supabase/supabase-js'
 
 interface HabitTrackerProps {
   id: number;
@@ -91,11 +91,18 @@ function calculateStreak(markedDays: string[]): number {
   return streak
 }
 
-async function retryRequest(fn: () => Promise<any>, retries = 3, delay = 1000) {
+interface SessionData {
+  data: {
+    session: Session | null;
+  };
+  error: AuthError | null;
+}
+
+async function retryRequest(fn: () => Promise<SessionData>, retries = 3, delay = 1000): Promise<SessionData> {
   try {
     return await fn();
   } catch (error: unknown) {
-    if (error instanceof Error && (error as any).status === 429) {
+    if (error instanceof Error && (error as { status?: number }).status === 429) {
       if (retries > 0) {
         await new Promise(res => setTimeout(res, delay));
         return retryRequest(fn, retries - 1, delay * 2);
@@ -124,16 +131,20 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
   const [currentCategoryId, setCurrentCategoryId] = useState<number | null>(initialCategoryId);
 
   useEffect(() => {
-    retryRequest(() => supabase.auth.getSession()).then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-    })
+    retryRequest(() => supabase.auth.getSession()).then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error fetching session:', error);
+      } else {
+        setUser(session?.user ?? null);
+      }
+    });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
+      setUser(session?.user ?? null);
+    });
 
-    return () => subscription.unsubscribe()
-  }, [])
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     setStreak(calculateStreak(markedDays))
