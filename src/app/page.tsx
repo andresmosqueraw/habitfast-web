@@ -92,29 +92,33 @@ export default function Page() {
   }, [defaultHabits]);
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language');
-    if (savedLanguage) {
-      // setLanguage(savedLanguage)
-    }
+    if (typeof window !== 'undefined') {
+      const savedLanguage = localStorage.getItem('language');
+      if (savedLanguage) {
+        // setLanguage(savedLanguage)
+      }
 
-    if (Notification.permission === 'default') {
-      setShowNotificationPrompt(true);
-    } else if (Notification.permission === 'granted') {
-      scheduleNotifications();
+      if (Notification.permission === 'default') {
+        setShowNotificationPrompt(true);
+      } else if (Notification.permission === 'granted') {
+        scheduleNotifications();
+      }
     }
   }, []);
 
   const requestNotificationPermission = () => {
-    Notification.requestPermission().then(permission => {
-      if (permission === 'granted') {
-        scheduleNotifications()
-      }
-      setShowNotificationPrompt(false) // Hide prompt after requesting permission
-    })
-  }
+    if (typeof window !== 'undefined' && Notification) {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          scheduleNotifications();
+        }
+        setShowNotificationPrompt(false);
+      });
+    }
+  };
 
   const scheduleNotifications = () => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !Notification) return;
 
     const now = new Date();
     const times = [
