@@ -39,6 +39,12 @@ export default function Page() {
   const [lastDeletedCategory, setLastDeletedCategory] = useState<{ id: number; name: string } | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(-1);
 
+  const isNotificationAvailable = () => {
+    return typeof window !== 'undefined' && 
+           'Notification' in window &&
+           typeof Notification !== 'undefined';
+  };
+
   const loadHabits = async (userId: string, categoryId: number | null = -1) => {
     try {
       let query = supabase
@@ -98,27 +104,29 @@ export default function Page() {
         // setLanguage(savedLanguage)
       }
 
-      if (Notification.permission === 'default') {
-        setShowNotificationPrompt(true);
-      } else if (Notification.permission === 'granted') {
-        scheduleNotifications();
+      if (isNotificationAvailable()) {
+        if (Notification.permission === 'default') {
+          setShowNotificationPrompt(true);
+        } else if (Notification.permission === 'granted') {
+          scheduleNotifications();
+        }
       }
     }
   }, []);
 
   const requestNotificationPermission = () => {
-    if (typeof window !== 'undefined' && Notification) {
-      Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-          scheduleNotifications();
-        }
-        setShowNotificationPrompt(false);
-      });
-    }
+    if (!isNotificationAvailable()) return;
+
+    Notification.requestPermission().then(permission => {
+      if (permission === 'granted') {
+        scheduleNotifications();
+      }
+      setShowNotificationPrompt(false);
+    });
   };
 
   const scheduleNotifications = () => {
-    if (typeof window === 'undefined' || !Notification) return;
+    if (!isNotificationAvailable()) return;
 
     const now = new Date();
     const times = [
@@ -136,7 +144,9 @@ export default function Page() {
 
       const timeout = notificationTime.getTime() - now.getTime();
       setTimeout(() => {
-        new Notification("Don't forget to mark your habits!");
+        if (isNotificationAvailable()) {
+          new Notification("Don't forget to mark your habits!");
+        }
       }, timeout);
     });
   };
