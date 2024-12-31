@@ -92,18 +92,17 @@ export default function Page() {
   }, [defaultHabits]);
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language')
+    const savedLanguage = localStorage.getItem('language');
     if (savedLanguage) {
       // setLanguage(savedLanguage)
     }
 
-    // Check notification permission on every page load
     if (Notification.permission === 'default') {
-      setShowNotificationPrompt(true)
+      setShowNotificationPrompt(true);
     } else if (Notification.permission === 'granted') {
-      scheduleNotifications()
+      scheduleNotifications();
     }
-  }, [])
+  }, []);
 
   const requestNotificationPermission = () => {
     Notification.requestPermission().then(permission => {
@@ -115,26 +114,28 @@ export default function Page() {
   }
 
   const scheduleNotifications = () => {
-    const now = new Date()
+    if (typeof window === 'undefined') return;
+
+    const now = new Date();
     const times = [
       { hour: 11, minute: 0 },
       { hour: 20, minute: 0 }
-    ]
+    ];
 
     times.forEach(({ hour, minute }) => {
-      const notificationTime = new Date()
-      notificationTime.setHours(hour, minute, 0, 0)
+      const notificationTime = new Date();
+      notificationTime.setHours(hour, minute, 0, 0);
 
       if (notificationTime < now) {
-        notificationTime.setDate(notificationTime.getDate() + 1)
+        notificationTime.setDate(notificationTime.getDate() + 1);
       }
 
-      const timeout = notificationTime.getTime() - now.getTime()
+      const timeout = notificationTime.getTime() - now.getTime();
       setTimeout(() => {
-        new Notification("Don't forget to mark your habits!")
-      }, timeout)
-    })
-  }
+        new Notification("Don't forget to mark your habits!");
+      }, timeout);
+    });
+  };
 
   const removeHabit = async (habitId: number) => {
     if (!user) return
