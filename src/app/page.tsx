@@ -51,7 +51,7 @@ export default function Page() {
         .from('habits')
         .select('*, categories(name)')
         .eq('user_id', userId)
-        .order('created_at', { ascending: true });
+        .order('order', { ascending: true });
 
       if (categoryId !== -1) {
         query = categoryId === null ? query.is('category_id', null) : query.eq('category_id', categoryId);
@@ -234,11 +234,6 @@ export default function Page() {
   const openModal = () => setIsModalOpen(true)
   const closeModal = () => setIsModalOpen(false)
 
-  const openDeleteModal = (habitId: number) => {
-    setHabitToDelete(habitId)
-    setIsConfirmDeleteOpen(true)
-  }
-
   const closeDeleteModal = () => {
     setIsConfirmDeleteOpen(false)
     setHabitToDelete(null)
@@ -399,6 +394,48 @@ export default function Page() {
     }
   }, [user, selectedCategoryId]);
 
+  const moveHabitUp = async (index: number) => {
+    if (index === 0) return; // No mover si ya está en la parte superior
+    setHabits((prevHabits) => {
+      const newHabits = [...prevHabits];
+      [newHabits[index - 1], newHabits[index]] = [newHabits[index], newHabits[index - 1]];
+
+      // Actualizar el campo `order` en la base de datos
+      updateHabitOrder(newHabits[index - 1].id, index - 1);
+      updateHabitOrder(newHabits[index].id, index);
+
+      return newHabits;
+    });
+  };
+
+  const moveHabitDown = async (index: number) => {
+    if (index === habits.length - 1) return; // No mover si ya está en la parte inferior
+    setHabits((prevHabits) => {
+      const newHabits = [...prevHabits];
+      [newHabits[index + 1], newHabits[index]] = [newHabits[index], newHabits[index + 1]];
+
+      // Actualizar el campo `order` en la base de datos
+      updateHabitOrder(newHabits[index + 1].id, index + 1);
+      updateHabitOrder(newHabits[index].id, index);
+
+      return newHabits;
+    });
+  };
+
+  // Función para actualizar el campo `order` en la base de datos
+  const updateHabitOrder = async (habitId: number, order: number) => {
+    try {
+      const { error } = await supabase
+        .from('habits')
+        .update({ order })
+        .eq('id', habitId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating habit order:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black p-1">
       <nav className="bg-gray-800 bg-opacity-50 p-4 flex justify-between items-center">
@@ -487,18 +524,25 @@ export default function Page() {
 
       <div className="max-w-6xl mx-auto space-y-2 mt-4">
         {/* Habit Trackers */}
-        {habits.map(habit => (
-          <HabitTracker
-            key={habit.id}
-            id={habit.id}
-            title={habit.title}
-            initialMarkedDays={habit.marked_days || []}
-            initialCategoryId={habit.category_id || null}
-            categories={categories}
-            onRemove={() => openDeleteModal(habit.id)}
-            onRename={(newTitle) => renameHabit(habit.id, newTitle)}
-          />
-        ))}
+        <div className="flex justify-center mt-4">
+          <div className="habit-list space-y-2">
+            {habits.map((habit, index) => (
+              <div key={habit.id} className="habit-item flex items-center justify-between">
+                <HabitTracker
+                  id={habit.id}
+                  title={habit.title}
+                  onRemove={() => removeHabit(habit.id)}
+                  onRename={(newTitle) => renameHabit(habit.id, newTitle)}
+                  initialMarkedDays={habit.marked_days}
+                  initialCategoryId={habit.category_id}
+                  categories={categories}
+                  onMoveUp={() => moveHabitUp(index)}
+                  onMoveDown={() => moveHabitDown(index)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Additional Information */}
         <div className="text-center space-y-2 text-gray-400">

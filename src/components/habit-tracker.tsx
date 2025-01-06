@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from "react"
-import { Check, Flame, Edit } from 'lucide-react'
+import { Check, Flame, Edit, ArrowUp, ArrowDown } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { supabase } from '../lib/supabase'
 import { User, AuthError, Session } from '@supabase/supabase-js'
@@ -14,6 +14,8 @@ interface HabitTrackerProps {
   initialMarkedDays?: string[];
   initialCategoryId?: number | null;
   categories: { id: number; name: string }[];
+  onMoveUp: () => void;
+  onMoveDown: () => void;
 }
 
 function formatDateForDB(date: Date): string {
@@ -112,7 +114,7 @@ async function retryRequest(fn: () => Promise<SessionData>, retries = 3, delay =
   }
 }
 
-export default function HabitTracker({ id, title, onRemove, onRename, initialMarkedDays = [], initialCategoryId = null, categories }: HabitTrackerProps) {
+export default function HabitTracker({ id, title, onRemove, onRename, initialMarkedDays = [], initialCategoryId = null, categories, onMoveUp, onMoveDown }: HabitTrackerProps) {
   const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const ROWS = 7 // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -253,6 +255,30 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
             </div>
           )}
 
+          {/* Botones de mover */}
+          <button
+            onClick={onMoveUp}
+            className="p-2 bg-gray-700 hover:bg-gray-600 rounded-full"
+            aria-label="Move Up"
+          >
+            <ArrowUp className="w-4 h-4 text-white" />
+          </button>
+          <button
+            onClick={onMoveDown}
+            className="p-2 bg-gray-700 hover:bg-gray-600 rounded-full mt-1"
+            aria-label="Move Down"
+          >
+            <ArrowDown className="w-4 h-4 text-white" />
+          </button>
+
+          {/* Botón de editar */}
+          <button 
+            className="p-3 rounded-full transition-transform transform hover:scale-105 bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
+            onClick={() => setIsEditModalOpen(true)}
+          >
+            <Edit className="w-5 h-5 text-white" />
+          </button>
+
           {/* Botón de marcar hábito */}
           <button 
             ref={buttonRef}
@@ -265,13 +291,6 @@ export default function HabitTracker({ id, title, onRemove, onRename, initialMar
             <Check className={`w-5 h-5 ${markedDays.includes(today) ? 'text-white' : 'text-emerald-400'}`} />
           </button>
 
-          {/* Botón de editar */}
-          <button 
-            className="p-3 rounded-full transition-transform transform hover:scale-105 bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
-            onClick={() => setIsEditModalOpen(true)}
-          >
-            <Edit className="w-5 h-5 text-white" />
-          </button>
         </div>
       </div>
 
