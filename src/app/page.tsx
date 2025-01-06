@@ -527,7 +527,7 @@ export default function Page() {
         <div className="flex justify-center mt-4">
           <div className="habit-list space-y-2">
             {habits.map((habit, index) => (
-              <div key={habit.id} className="habit-item flex items-center justify-between">
+              <div key={habit.id} className="habit-item">
                 <HabitTracker
                   id={habit.id}
                   title={habit.title}
